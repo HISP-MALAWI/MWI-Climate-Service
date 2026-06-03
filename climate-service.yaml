@@ -3,7 +3,7 @@ name: Malawi Climate Service
 
 extent:
   name: Malawi
-  bbox: [32.65, -16.15, 36.15, -8.75]
+  bbox: [32.674999, -17.133333, 35.916666, -9.366666]
   country_code: MWI
 
 data_dir: ./data
