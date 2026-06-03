@@ -1,10 +1,10 @@
-id: sri-lanka-climate-service
-name: Sri Lanka Climate Service
+id: Malawi-climate-service
+name: Malawi Climate Service
 
 extent:
-  name: Sri Lanka
-  bbox: [78.005, 5.505, 82.495, 9.995]
-  country_code: LKA
+  name: Malawi
+  bbox: [32.65, -16.15, 36.15, -8.75]
+  country_code: MWI
 
 data_dir: ./data
 plugins_dir: ./plugins/
