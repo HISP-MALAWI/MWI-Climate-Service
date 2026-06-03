@@ -6,8 +6,8 @@ This project is based on the [Open Climate Service](https://dhis2.github.io/clim
 
 1. **Clone the repository:**
    ```sh
-   git clone <repo-url>
-   cd sri-lanka-climate-service
+   git clone 
+   cd MWI-climate-service
    ```
 
 2. **Install dependencies:**
