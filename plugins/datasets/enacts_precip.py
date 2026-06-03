@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 import io
 import logging
-import os  # Added for environment variable access
+import os
 from typing import Any
 
 import numpy as np
@@ -14,17 +15,21 @@ from open_climate_service.streaming.protocol import GridSpec
 
 logger = logging.getLogger(__name__)
 
-_VAR = "precip"
+# The streaming engine expects this variable name internally
+_OCS_VAR = "precip"
+# API gateway strictly validates and requires "precip" in the URL string
+_API_VAR = "precip"
 _RES_DEG = 0.05
 
 
 class EnactsPrecipPlugin:
     """IngestionPlugin for remote ENACTS precipitation data fetched via the DST API.
 
-    Queries the REST API dynamically, sourcing authentication securely from the environment.
+    Queries the REST API dynamically, pulling down spatial subsets on demand.
+    Sources authentication credentials securely from the environment.
     """
 
-    max_concurrency = 4
+    max_concurrency = 1
     commit_batch_size = 30
     rechunk_time = 365
     pyramid: bool = True
@@ -34,22 +39,26 @@ class EnactsPrecipPlugin:
         base_url: str, 
         dataset: str = "MON", 
         temporal_resolution: str = "daily",
-        api_key: str | None = None  # Now optional in YAML
+        api_key: str | None = None
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._dataset = dataset
         self._temporal_resolution = temporal_resolution
         
-        # Fallback to os.getenv if not explicitly provided in the YAML block
         resolved_key = api_key or os.getenv("ENACTS_API_KEY")
-        
         if not resolved_key:
             raise ValueError(
-                "ENACTS API key missing. Please set 'ENACTS_API_KEY' in your .env file "
-                "or pass 'api_key' inside the plugin parameters."
+                "ENACTS API key missing. Please set 'ENACTS_API_KEY' in your .env file."
             )
             
-        self._headers = {"Authorization": f"Apikey {resolved_key}"}
+        self._headers = {
+            "Authorization": f"Apikey {resolved_key}",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            )
+        }
 
     async def probe(self, bbox: list[float], **_: Any) -> GridSpec:
         xmin, ymin, xmax, ymax = map(float, bbox)
@@ -74,37 +83,69 @@ class EnactsPrecipPlugin:
         xmin, ymin, xmax, ymax = map(float, bbox)
         endpoint = f"{self._base_url}/download_raw_data"
         
+        dt = datetime.strptime(period_id[:10], "%Y-%m-%d")
+        unpadded_date = f"{dt.year}-{dt.month}-{dt.day}"
+        
         params = {
             "dataset": self._dataset,
-            "temporal_resolution": self._temporal_resolution,
-            "variable": _VAR,
+            "temporalRes": self._temporal_resolution,
+            "variable": _API_VAR,
             "geomExtract": "rectangle",
-            "xmin": xmin,
-            "ymin": ymin,
-            "xmax": xmax,
-            "ymax": ymax,
-            "start_date": period_id,
-            "end_date": period_id,
-            "format": "netcdf"
+            "minLon": xmin,
+            "maxLon": xmax,
+            "minLat": ymin,
+            "maxLat": ymax,
+            "Date": unpadded_date,
+            "outFormat": "netCDF-Format"
         }
 
-        logger.info("Requesting ENACTS Precip for %s over bounds %s", period_id, bbox)
-        response = requests.get(endpoint, params=params, headers=self._headers, timeout=30)
-        response.raise_for_status()
+        logger.info("Requesting ENACTS Precip for %s over bounds %s", unpadded_date, bbox)
+        response = requests.get(endpoint, params=params, headers=self._headers, timeout=45)
+        
+        if response.status_code != 200:
+            error_msg = (
+                f"\n=== ENACTS SERVER ERROR ({response.status_code}) ===\n"
+                f"URL Called: {response.url}\n"
+                f"Server Response Body: {response.text}\n"
+                f"========================================="
+            )
+            logger.error(error_msg)
+            raise requests.HTTPError(error_msg, response=response)
 
-        with xr.open_dataset(io.BytesIO(response.content)) as ds:
-            lon_key = "lon" if "lon" in ds.coords else "longitude"
-            lat_key = "lat" if "lat" in ds.coords else "latitude"
-            var_key = _VAR if _VAR in ds.data_vars else list(ds.data_vars)[0]
-
-            da = ds[var_key].sel(time=period_id, method="nearest")
-            da = da.sel({lon_key: slice(xmin, xmax), lat_key: slice(ymin, ymax)})
+        with xr.open_dataset(io.BytesIO(response.content), engine="h5netcdf") as ds:
+            # FIX: Build an explicit normalization map to force Title-Case coords down to lowercase
+            rename_coords = {}
+            if "Time" in ds.variables or "Time" in ds.dims: rename_coords["Time"] = "time"
+            if "Lat" in ds.variables or "Lat" in ds.dims: rename_coords["Lat"] = "lat"
+            if "Lon" in ds.variables or "Lon" in ds.dims: rename_coords["Lon"] = "lon"
+            if "longitude" in ds.variables: rename_coords["longitude"] = "lon"
+            if "latitude" in ds.variables: rename_coords["latitude"] = "lat"
             
-            da = da.rename({lon_key: "x", lat_key: "y"})
+            if rename_coords:
+                ds = ds.rename(rename_coords)
+
+            # Dynamic variable intercept: Checks file structure for internal 'rr' or 'precip' naming
+            if "rr" in ds.data_vars:
+                var_key = "rr"
+            elif "precip" in ds.data_vars:
+                var_key = "precip"
+            else:
+                var_key = list(ds.data_vars)[0]
+
+            # Slice spatial and temporal coordinates safely now that dimensions are unified
+            da = ds[var_key].sel(time=period_id, method="nearest")
+            da = da.sel(lon=slice(xmin, xmax), lat=slice(ymin, ymax))
+            
+            da = da.rename({"lon": "x", "lat": "y"})
             da = da.astype("float32")
             da.attrs["units"] = "mm"
 
-            result = da.rename(_VAR).to_dataset()
+            # Clean out structural coordinates to prevent collision with framework expansion dims
+            if "time" in da.coords:
+                da = da.drop_vars("time")
+
+            # Map the clean dataset array back to OCS framework naming conventions
+            result = da.rename(_OCS_VAR).to_dataset()
             result = result.expand_dims(time=[np.datetime64(period_id)])
             return result.load()
 
