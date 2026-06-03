@@ -7,5 +7,4 @@ install: ## Install dependencies with uv
 	uv sync
 
 run: ## Start the app with uvicorn
-	set -a && . ./.env && set +a && \
-		uv run uvicorn open_climate_service.main:app --reload --reload-include "*.yaml" --reload-include "*.yml" --port 8002
+	uv run --env-file .env uvicorn open_climate_service.main:app --reload --reload-include "*.yaml" --reload-include "*.yml" --port 8002
