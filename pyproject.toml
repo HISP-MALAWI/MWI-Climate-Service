@@ -1,8 +1,8 @@
 [project]
-name = "sri-lanka-climate-service"
+name = "Malawi-climate-service"
 version = "0.1.0"
 requires-python = ">=3.13,<3.14"
-description = "Open Climate Service instance for Sri Lanka"
+description = "Open Climate Service instance for Malawi"
 dependencies = [
     "boto3",
     "cdsapi>=0.7.7",
@@ -31,5 +31,11 @@ override-dependencies = [
     "botocore>=1.42.90,<1.43.1",
 ]
 
+[[tool.uv.index]]
+name = "geospatial-wheels"
+url = "https://gisidx.github.io/gwi"
+explicit = true
+
 [tool.uv.sources]
 open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "main" }
+gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
