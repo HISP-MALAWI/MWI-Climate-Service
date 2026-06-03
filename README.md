@@ -6,7 +6,7 @@ This project is based on the [Open Climate Service](https://dhis2.github.io/clim
 
 1. **Clone the repository:**
    ```sh
-   git clone 
+   git clone https://github.com/HISP-MALAWI/MWI-Climate-Service.git
    cd MWI-climate-service
    ```
 
