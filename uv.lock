@@ -14,7 +14,8 @@ overrides = [
     { name = "botocore", specifier = ">=1.42.90,<1.43.1" },
     { name = "dask", specifier = ">=2024.1.0" },
     { name = "dask-geopandas", specifier = ">=0.4" },
-    { name = "gdal", specifier = "==3.12.2" },
+    { name = "gdal", marker = "sys_platform != 'win32'", specifier = "==3.12.2" },
+    { name = "gdal", marker = "sys_platform == 'win32'", specifier = "==3.12.2", index = "https://gisidx.github.io/gwi" },
     { name = "geojson-pydantic", specifier = ">=2.1.0" },
     { name = "geopandas", specifier = ">=1.1" },
     { name = "numpy", specifier = ">=2.2" },
@@ -984,7 +985,25 @@ http = [
 [[package]]
 name = "gdal"
 version = "3.12.2"
+source = { registry = "https://gisidx.github.io/gwi" }
+resolution-markers = [
+    "platform_machine == 'ARM64' and sys_platform == 'win32'",
+    "platform_machine != 'ARM64' and sys_platform == 'win32'",
+]
+wheels = [
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2026.2.26/gdal-3.12.2-cp313-cp313-win32.whl" },
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2026.2.26/gdal-3.12.2-cp313-cp313-win_amd64.whl" },
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2026.2.26/gdal-3.12.2-cp313-cp313-win_arm64.whl" },
+]
+
+[[package]]
+name = "gdal"
+version = "3.12.2"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "sys_platform == 'emscripten'",
+    "sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/b7/73/52753654d259cae674b7d4f2167d421382d9aa2ee510f047338381ae175b/gdal-3.12.2.tar.gz", hash = "sha256:a5afa8e55a19b296a004a15d38fe3ad60cc380f1f090e2aab5d35331008c970f", size = 899232, upload-time = "2026-02-09T17:53:29.78Z" }
 
 [[package]]
@@ -1313,6 +1332,27 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/fa/d660fa63144f38a0fd5b437a140517e3cff482d955ef6b9b4cf7651b9d85/lru_dict-1.4.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:989ef7352b347c82e5d5047f3b7ddf34b5a938e3f7b08775cacc9f28e97dd2a8", size = 31651, upload-time = "2025-11-02T10:01:33.874Z" },
     { url = "https://files.pythonhosted.org/packages/2e/77/0fae8d0702f7546f436efe06a684b301aad5c8a167bb2df6e42b0f821de5/lru_dict-1.4.1-cp313-cp313-win32.whl", hash = "sha256:a36e6e95b5d474ef90d04a5e3ad81ca362b473ec9534ed964222f3c0444138b8", size = 13120, upload-time = "2025-11-02T10:01:34.595Z" },
     { url = "https://files.pythonhosted.org/packages/4a/20/56a3f0d74c8fe32c01d3978387f66c9fb180c7f15bfd9fcecaa01b4e7736/lru_dict-1.4.1-cp313-cp313-win_amd64.whl", hash = "sha256:8e73a1ec2d0f476d666ce7c91464b22854086951b319544d1850c508f5ce381f", size = 14112, upload-time = "2025-11-02T10:01:35.268Z" },
+]
+
+[[package]]
+name = "malawi-climate-service"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "boto3" },
+    { name = "cdsapi" },
+    { name = "ecmwf-datastores-client" },
+    { name = "open-climate-service" },
+    { name = "pystac-client" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "boto3" },
+    { name = "cdsapi", specifier = ">=0.7.7" },
+    { name = "ecmwf-datastores-client" },
+    { name = "open-climate-service", git = "https://github.com/dhis2/open-climate-service.git?branch=main" },
+    { name = "pystac-client", specifier = ">=0.9.0" },
 ]
 
 [[package]]
@@ -2647,27 +2687,6 @@ wheels = [
 ]
 
 [[package]]
-name = "sri-lanka-climate-service"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "boto3" },
-    { name = "cdsapi" },
-    { name = "ecmwf-datastores-client" },
-    { name = "open-climate-service" },
-    { name = "pystac-client" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "boto3" },
-    { name = "cdsapi", specifier = ">=0.7.7" },
-    { name = "ecmwf-datastores-client" },
-    { name = "open-climate-service", git = "https://github.com/dhis2/open-climate-service.git?branch=main" },
-    { name = "pystac-client", specifier = ">=0.9.0" },
-]
-
-[[package]]
 name = "stac-valid"
 version = "4.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2987,7 +3006,8 @@ dependencies = [
     { name = "distributed" },
     { name = "fiona" },
     { name = "fsspec" },
-    { name = "gdal" },
+    { name = "gdal", version = "3.12.2", source = { registry = "https://gisidx.github.io/gwi" }, marker = "sys_platform == 'win32'" },
+    { name = "gdal", version = "3.12.2", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'win32'" },
     { name = "geopandas" },
     { name = "jdcal" },
     { name = "jsonschema" },
