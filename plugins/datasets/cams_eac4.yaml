@@ -1,0 +1,26 @@
+- id: cams_pm25_hourly
+  name: PM2.5 Surface Concentration (CAMS EAC4)
+  short_name: PM2.5
+  variable: pm2p5
+  period_type: hourly
+  sync:
+    kind: temporal
+    execution: append
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "2003-01-01"
+      resolution: PT3H
+  ingestion:
+    plugin: datasets.cams_eac4.CamsEac4Plugin
+    params:
+      api_variable: particulate_matter_2.5um
+      variable: pm2p5
+  units: "μg m⁻³"
+  resolution: 0.75° × 0.75°
+  source: CAMS Global Reanalysis (EAC4)
+  source_url: https://ads.atmosphere.copernicus.eu/datasets/cams-global-reanalysis-eac4
+  display:
+    colormap: YlOrRd
+    range: [0, 100]

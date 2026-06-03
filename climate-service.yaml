@@ -1,0 +1,12 @@
+id: sri-lanka-climate-service
+name: Sri Lanka Climate Service
+
+extent:
+  name: Sri Lanka
+  bbox: [78.005, 5.505, 82.495, 9.995]
+  country_code: LKA
+
+data_dir: ./data
+plugins_dir: ./plugins/
+
+crs: EPSG:32644

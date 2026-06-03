@@ -1,0 +1,40 @@
+- id: modis_landcover_yearly
+  name: Land Cover MODIS MCD12Q1
+  short_name: Land Cover
+  variable: land_cover
+  period_type: yearly
+  sync:
+    kind: release
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "2001"
+      resolution: P1Y
+  ingestion:
+    plugin: datasets.modis_landcover.ModisLandCoverPlugin
+    params: {}
+  units: null
+  resolution: 500m x 500m
+  source: MODIS Terra+Aqua MCD12Q1 v061 — IGBP classification (LC_Type1)
+  source_url: https://lpdaac.usgs.gov/products/mcd12q1v061/
+  display:
+    palette:
+      0:   "#000000"  # Unclassified
+      1:   "#1c6330"  # Evergreen Needleleaf Forests
+      2:   "#059131"  # Evergreen Broadleaf Forests
+      3:   "#297008"  # Deciduous Needleleaf Forests
+      4:   "#43a44a"  # Deciduous Broadleaf Forests
+      5:   "#6f9c32"  # Mixed Forests
+      6:   "#c3a83b"  # Closed Shrublands
+      7:   "#d4af2e"  # Open Shrublands
+      8:   "#b2b218"  # Woody Savannas
+      9:   "#d9bf1c"  # Savannas
+      10:  "#d9c94e"  # Grasslands
+      11:  "#3c7f6e"  # Permanent Wetlands
+      12:  "#d4c71a"  # Croplands
+      13:  "#c4241a"  # Urban and Built-up Lands
+      14:  "#c3b943"  # Cropland/Natural Vegetation Mosaics
+      15:  "#f8f8f8"  # Permanent Snow and Ice
+      16:  "#b4a87a"  # Barren
+      17:  "#1a4db3"  # Water Bodies

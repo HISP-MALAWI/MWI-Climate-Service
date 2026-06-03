@@ -1,0 +1,23 @@
+- id: clms_ndvi_dekadal
+  name: Vegetation Index NDVI (CLMS)
+  short_name: NDVI
+  variable: ndvi
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "2014-01-01"
+      resolution: P10D
+  ingestion:
+    plugin: datasets.clms_ndvi.ClmsNdviPlugin
+    params: {}
+  units: null
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS NDVI 300m v3
+  source_url: https://land.copernicus.eu/global/products/ndvi
+  display:
+    colormap: YlGn
+    range: [-0.1, 1.0]

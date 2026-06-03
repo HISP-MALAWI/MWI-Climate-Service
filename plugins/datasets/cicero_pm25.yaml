@@ -1,0 +1,22 @@
+- id: cicero_pm25_daily
+  name: PM2.5 Surface Concentration (Cicero)
+  short_name: PM2.5
+  variable: pm25
+  period_type: daily
+  sync:
+    kind: static
+  extents:
+    temporal:
+      begin: "2020-03-01"
+      end: "2023-12-31"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.cicero_pm25.CiceroPm25Plugin
+    params:
+      file_path: /Users/mastermaps/Downloads/pm_final_srilanka_linearp.nc
+  units: "μg m⁻³"
+  resolution: 0.01° × 0.01° (~1 km)
+  source: CICERO Center for International Climate Research
+  display:
+    colormap: YlOrRd
+    range: [0, 75]

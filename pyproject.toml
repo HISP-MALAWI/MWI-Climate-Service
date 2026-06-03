@@ -1,0 +1,35 @@
+[project]
+name = "sri-lanka-climate-service"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+description = "Open Climate Service instance for Sri Lanka"
+dependencies = [
+    "boto3",
+    "cdsapi>=0.7.7",
+    "open-climate-service @ git+https://github.com/dhis2/open-climate-service.git",
+    "ecmwf-datastores-client",
+    "pystac-client>=0.9.0",
+]
+
+[tool.uv]
+package = false
+override-dependencies = [
+    "geojson-pydantic>=2.1.0",
+    "zarr>=3.1.6",
+    "pyarrow>=19.0",
+    "xarray>=2025.12.0",
+    "numpy>=2.2",
+    "dask>=2024.1.0",
+    "dask-geopandas>=0.4",
+    "geopandas>=1.1",
+    "xvec>=0.3",
+    "rioxarray>=0.17",
+    "pystac>=1.10",
+    "gdal==3.12.2",
+    # aiobotocore (via icechunk/s3fs) requires botocore<1.43.1; pin boto3 accordingly
+    "boto3>=1.42.90,<1.43.1",
+    "botocore>=1.42.90,<1.43.1",
+]
+
+[tool.uv.sources]
+open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "main" }

@@ -1,0 +1,23 @@
+- id: copernicus_dem_elevation
+  name: Elevation (Copernicus DEM GLO-30)
+  short_name: Elevation
+  variable: elevation
+  period_type: yearly
+  sync:
+    kind: release
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "2010"
+      resolution: P1Y
+  ingestion:
+    plugin: datasets.copernicus_dem.CopernicusDemPlugin
+    params: {}
+  units: m
+  resolution: 30m x 30m
+  source: Copernicus DEM GLO-30
+  source_url: https://registry.opendata.aws/copernicus-dem/
+  display:
+    colormap: Spectral_r
+    range: [0, 4000]

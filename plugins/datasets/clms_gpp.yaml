@@ -1,0 +1,23 @@
+- id: clms_gpp_dekadal
+  name: Gross Primary Production (CLMS)
+  short_name: GPP
+  variable: gpp
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "2014-01-01"
+      resolution: P10D
+  ingestion:
+    plugin: datasets.clms_gpp.ClmsGppPlugin
+    params: {}
+  units: "g C m⁻² day⁻¹"
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS GPP 300m v2
+  source_url: https://land.copernicus.eu/global/products/gpp
+  display:
+    colormap: YlGn
+    range: [0, 15]
