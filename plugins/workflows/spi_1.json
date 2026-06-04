@@ -1,0 +1,43 @@
+{
+  "id": "spi_1",
+  "summary": "Calculate the Standardized Precipitation Index (SPI) for a specified baseline period.",
+  "process_graph": {
+    "load1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": "enacts_precip_daily",
+        "spatial_extent": {
+          "west": 76.51154907485409,
+          "east": 76.51157763167943,
+          "south": -0.00015423139818220453,
+          "north": -0.00008455668238291335
+        },
+        "temporal_extent": [
+          "1990-01-01T00:00:00Z",
+          "2021-02-20T00:00:00Z"
+        ],
+        "bands": null
+      }
+    },
+    "spi2": {
+      "process_id": "spi_1",
+      "arguments": {
+        "pr": {
+          "from_node": "load1"
+        },
+        "baseline": "1990-2020"
+      }
+    },
+    "save3": {
+      "process_id": "save_result",
+      "arguments": {
+        "format": "ZARR",
+        "data": {
+          "from_node": "spi2"
+        }
+      },
+      "result": true
+    }
+  },
+  "parameters": []
+}
