@@ -15,9 +15,7 @@ from open_climate_service.streaming.protocol import GridSpec
 
 logger = logging.getLogger(__name__)
 
-# The streaming engine expects this variable name internally
 _OCS_VAR = "precip"
-# API gateway strictly validates and requires "precip" in the URL string
 _API_VAR = "precip"
 _RES_DEG = 0.05
 
@@ -99,7 +97,6 @@ class EnactsPrecipPlugin:
             "outFormat": "netCDF-Format"
         }
 
-        logger.info("Requesting ENACTS Precip for %s over bounds %s", unpadded_date, bbox)
         response = requests.get(endpoint, params=params, headers=self._headers, timeout=45)
         
         if response.status_code != 200:
@@ -113,7 +110,6 @@ class EnactsPrecipPlugin:
             raise requests.HTTPError(error_msg, response=response)
 
         with xr.open_dataset(io.BytesIO(response.content), engine="h5netcdf") as ds:
-            # FIX: Build an explicit normalization map to force Title-Case coords down to lowercase
             rename_coords = {}
             if "Time" in ds.variables or "Time" in ds.dims: rename_coords["Time"] = "time"
             if "Lat" in ds.variables or "Lat" in ds.dims: rename_coords["Lat"] = "lat"
@@ -124,7 +120,6 @@ class EnactsPrecipPlugin:
             if rename_coords:
                 ds = ds.rename(rename_coords)
 
-            # Dynamic variable intercept: Checks file structure for internal 'rr' or 'precip' naming
             if "rr" in ds.data_vars:
                 var_key = "rr"
             elif "precip" in ds.data_vars:
@@ -132,7 +127,6 @@ class EnactsPrecipPlugin:
             else:
                 var_key = list(ds.data_vars)[0]
 
-            # Slice spatial and temporal coordinates safely now that dimensions are unified
             da = ds[var_key].sel(time=period_id, method="nearest")
             da = da.sel(lon=slice(xmin, xmax), lat=slice(ymin, ymax))
             
@@ -140,11 +134,9 @@ class EnactsPrecipPlugin:
             da = da.astype("float32")
             da.attrs["units"] = "mm"
 
-            # Clean out structural coordinates to prevent collision with framework expansion dims
             if "time" in da.coords:
                 da = da.drop_vars("time")
 
-            # Map the clean dataset array back to OCS framework naming conventions
             result = da.rename(_OCS_VAR).to_dataset()
             result = result.expand_dims(time=[np.datetime64(period_id)])
             return result.load()
