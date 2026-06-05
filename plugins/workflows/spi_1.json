@@ -1,5 +1,5 @@
 {
-  "id": "spi_1",
+  "id": "spi_1_monthly",
   "summary": "Calculate the Standardized Precipitation Index (SPI) for a specified baseline period.",
   "process_graph": {
     "load1": {
