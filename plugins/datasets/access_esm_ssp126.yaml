@@ -13,7 +13,7 @@
   ingestion:
     plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
-      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tavg.nc
+      file_path: ./data/ACCESS-ESM1-5_ssp126/tavg.nc
       variable: tavg
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
@@ -37,7 +37,7 @@
   ingestion:
     plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
-      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tmin.nc
+      file_path: ./data/ACCESS-ESM1-5_ssp126/tmin.nc
       variable: tmin
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
@@ -61,7 +61,7 @@
   ingestion:
     plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
-      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tmax.nc
+      file_path: ./data/ACCESS-ESM1-5_ssp126/tmax.nc
       variable: tmax
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
@@ -85,7 +85,7 @@
   ingestion:
     plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
-      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/pre.nc
+      file_path: ./data/ACCESS-ESM1-5_ssp126/pre.nc
       variable: pre
   units: "mm"
   resolution: 0.5° × 0.5° (~55 km)
