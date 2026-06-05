@@ -16,6 +16,8 @@
       base_url: "http://168.253.224.242:9091/dst"
       dataset: "MON"
   units: "mm"
+  cf_attributes:
+    units: "mm"
   resolution: 0.05° × 0.05° (~5 km)
   source: Department of Climate Change and Meteorological Services.
   display:
