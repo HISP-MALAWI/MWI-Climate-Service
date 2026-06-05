@@ -62,7 +62,9 @@ class AccessEsmSsp126Plugin:
             crs=4326,
             dtype=np.dtype("float32"),
             nodata=float("nan"),
-            time_dim="time",
+            time_dim="t",
+            x_dim="x",
+            y_dim="y",
         )
 
     async def periods(self, start: str, end: str) -> list[str]:
@@ -88,6 +90,6 @@ class AccessEsmSsp126Plugin:
         da = da.astype("float32")
 
         result = da.to_dataset()
-        result = result.expand_dims(time=[np.datetime64(period_id)])
+        result = result.expand_dims({"t": [np.datetime64(period_id)]})
         result = result.load()
         return result
