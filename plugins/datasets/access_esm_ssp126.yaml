@@ -1,0 +1,95 @@
+- id: access_esm_ssp126_tavg
+  name: Mean Temperature – ACCESS-ESM1-5 SSP1-2.6
+  short_name: Mean Temp
+  variable: tavg
+  period_type: daily
+  sync:
+    kind: static
+  extents:
+    temporal:
+      begin: "1970-01-02"
+      end: "2101-01-03"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    params:
+      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tavg.nc
+      variable: tavg
+  units: "°C"
+  resolution: 0.5° × 0.5° (~55 km)
+  source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  display:
+    colormap: RdYlBu_r
+    range: [10, 35]
+
+- id: access_esm_ssp126_tmin
+  name: Minimum Temperature – ACCESS-ESM1-5 SSP1-2.6
+  short_name: Min Temp
+  variable: tmin
+  period_type: daily
+  sync:
+    kind: static
+  extents:
+    temporal:
+      begin: "1970-01-02"
+      end: "2101-01-03"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    params:
+      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tmin.nc
+      variable: tmin
+  units: "°C"
+  resolution: 0.5° × 0.5° (~55 km)
+  source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  display:
+    colormap: RdYlBu_r
+    range: [5, 30]
+
+- id: access_esm_ssp126_tmax
+  name: Maximum Temperature – ACCESS-ESM1-5 SSP1-2.6
+  short_name: Max Temp
+  variable: tmax
+  period_type: daily
+  sync:
+    kind: static
+  extents:
+    temporal:
+      begin: "1970-01-02"
+      end: "2101-01-03"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    params:
+      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/tmax.nc
+      variable: tmax
+  units: "°C"
+  resolution: 0.5° × 0.5° (~55 km)
+  source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  display:
+    colormap: RdYlBu_r
+    range: [15, 40]
+
+- id: access_esm_ssp126_pre
+  name: Precipitation – ACCESS-ESM1-5 SSP1-2.6
+  short_name: Precipitation
+  variable: pre
+  period_type: daily
+  sync:
+    kind: static
+  extents:
+    temporal:
+      begin: "1970-01-02"
+      end: "2101-01-03"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    params:
+      file_path: /Users/mastermaps/Downloads/ACCESS-ESM1-5_ssp126/pre.nc
+      variable: pre
+  units: "mm"
+  resolution: 0.5° × 0.5° (~55 km)
+  source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  display:
+    colormap: YlGnBu
+    range: [0, 50]
