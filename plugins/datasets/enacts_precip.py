@@ -69,6 +69,8 @@ class EnactsPrecipPlugin:
             dtype=np.dtype("float32"),
             nodata=float("nan"),
             time_dim="time",
+            x_dim="x",  # FIXED: Added missing protocol requirement
+            y_dim="y",  # FIXED: Added missing protocol requirement
         )
 
     async def periods(self, start: str, end: str) -> list[str]:
@@ -127,8 +129,18 @@ class EnactsPrecipPlugin:
             else:
                 var_key = list(ds.data_vars)[0]
 
-            da = ds[var_key].sel(time=period_id, method="nearest")
-            da = da.sel(lon=slice(xmin, xmax), lat=slice(ymin, ymax))
+            # Handle temporal slicing safely
+            if "time" in ds.dims and ds.sizes["time"] > 1:
+                da = ds[var_key].sel(time=period_id, method="nearest")
+            else:
+                da = ds[var_key].isel(time=0) if "time" in ds.dims else ds[var_key]
+
+            # FIXED: Handle coordinate direction mapping defensively
+            # Slices are direction-dependent; sorting ensures uniform behaviors
+            if da.lat.values[0] > da.lat.values[-1]:
+                da = da.sel(lon=slice(xmin, xmax), lat=slice(ymax, ymin))
+            else:
+                da = da.sel(lon=slice(xmin, xmax), lat=slice(ymin, ymax))
             
             da = da.rename({"lon": "x", "lat": "y"})
             da = da.astype("float32")
