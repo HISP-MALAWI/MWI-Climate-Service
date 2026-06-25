@@ -11,7 +11,7 @@ import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.streaming.protocol import GridSpec
+from open_climate_service.streaming import BaseDatasetPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ _API_VAR = "precip"
 _RES_DEG = 0.05
 
 
-class EnactsPrecipPlugin:
+class EnactsPrecipPlugin(BaseDatasetPlugin):
     """IngestionPlugin for remote ENACTS precipitation data fetched via the DST API.
 
     Queries the REST API dynamically, pulling down spatial subsets on demand.
@@ -57,19 +57,6 @@ class EnactsPrecipPlugin:
                 "Chrome/120.0.0.0 Safari/537.36"
             )
         }
-
-    async def probe(self, bbox: list[float], **_: Any) -> GridSpec:
-        xmin, ymin, xmax, ymax = map(float, bbox)
-        nx = max(1, round((xmax - xmin) / _RES_DEG))
-        ny = max(1, round((ymax - ymin) / _RES_DEG))
-        
-        return GridSpec(
-            shape=(ny, nx),
-            crs=4326,
-            dtype=np.dtype("float32"),
-            nodata=float("nan"),
-            time_dim="time",
-        )
 
     async def periods(self, start: str, end: str) -> list[str]:
         start_dt = np.datetime64(start[:10], "D")
