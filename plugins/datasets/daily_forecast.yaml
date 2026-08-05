@@ -1,0 +1,49 @@
+- id: tmin_forecast_daily
+  name: Minimum Temperature (Daily Forecast)
+  short_name: Min Temp
+  variable: tmin
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "2026-08-05"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: "http://168.253.224.247:8000/"
+      dataset: "tmin"
+  units: "°C"
+  cf_attributes:
+    units: "°C"
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  display:
+    colormap: CoolWarm
+    range: [-10, 40]
+
+- id: tmax_forecast_daily
+  name: Maximum Temperature (Daily Forecast)
+  short_name: Max Temp
+  variable: tmax
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "2026-08-05"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: "http://168.253.224.247:8000/"
+      dataset: "tmax"
+  units: "°C"
+  cf_attributes:
+    units: "°C"
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  display:
+    colormap: CoolWarm
+    range: [-10, 40]
