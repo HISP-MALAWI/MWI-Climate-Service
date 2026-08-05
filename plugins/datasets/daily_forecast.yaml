@@ -14,11 +14,13 @@
     params:
       base_url: "http://168.253.224.247:8000/"
       dataset: "tmin"
+      max_forecast_days: 7
   units: "°C"
   cf_attributes:
     units: "°C"
   resolution: 0.0629° × 0.0645° (~7 km)
   source: Department of Climate change and meteological services.
+  source_url: "https://www.metmalawi.gov.mw/"
   display:
     colormap: CoolWarm
     range: [-10, 40]
@@ -39,11 +41,71 @@
     params:
       base_url: "http://168.253.224.247:8000/"
       dataset: "tmax"
+      max_forecast_days: 7
   units: "°C"
   cf_attributes:
     units: "°C"
   resolution: 0.0629° × 0.0645° (~7 km)
   source: Department of Climate change and meteological services.
+  source_url: "https://www.metmalawi.gov.mw/"
+  display:
+    colormap: YlOrRd
+    range: [15, 45]
+
+- id: precipitation_forecast_daily
+  name: Precipitation (Daily Forecast)
+  short_name: Precip
+  variable: precipitation
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "2026-08-05"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: "http://168.253.224.247:8000/"
+      dataset: "precipitation"
+      max_forecast_days: 7
+  units: "mm"
+  cf_attributes:
+    units: "mm"
+    standard_name: lwe_thickness_of_precipitation_amount
+    cell_methods: "time: sum"
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: "https://www.metmalawi.gov.mw/"
+  display:
+    colormap: Blues
+    range: [0, 50]
+
+- id: tmean_forecast_daily
+  name: Mean Temperature (Daily Forecast)
+  short_name: Mean Temp
+  variable: tmean
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "2026-08-05"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: "http://168.253.224.247:8000/"
+      dataset: "tmean"
+      max_forecast_days: 7
+  units: "°C"
+  cf_attributes:
+    units: "°C"
+    standard_name: air_temperature
+    cell_methods: "time: mean"
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: "https://www.metmalawi.gov.mw/"
   display:
     colormap: CoolWarm
-    range: [-10, 40]
+    range: [5, 35]
