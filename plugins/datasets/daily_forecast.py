@@ -2,9 +2,18 @@
 
 Fetches daily variable forecasts (tmin, tmax, etc.) from the DCCMS gridded
 forecast service. The upstream API is keyed by forecast *lead day*
-(day=1, 2, 3, ...) rather than a calendar date range, so `periods()`
-ignores start/end and instead walks lead days until the API stops
-returning data.
+(day=1, 2, 3, ...) rather than a calendar date range, so `periods()` walks
+lead days from the API rather than requesting a range directly -- but it
+now filters those lead days against the requested `start`/`end` rather
+than ignoring them (see dhis2/open-climate-service#332).
+
+Per that contract, this dataset's template must declare
+`temporal_direction: future` so core resolves an omitted `start` to "now"
+and an omitted `end` to a generous forward horizon -- this plugin never
+receives `None` for either, but it must clip its own output to `end`
+itself, since core rejects a plugin whose materialized periods overshoot
+the requested scope ("Materialized artifact coverage does not match the
+requested scope").
 
 Grid is a near-regular ~7km (0.0629 lat x 0.0645 lon degree) curvilinear
 mesh returned as parallel 2D lat/lon/values arrays. The row-to-row and
@@ -20,6 +29,7 @@ from __future__ import annotations
 
 import logging
 import time
+from datetime import date
 from typing import Any
 
 import numpy as np
@@ -43,9 +53,13 @@ class DailyForecastPlugin(BaseDatasetPlugin):
     Subclasses BaseDatasetPlugin, so `time_dim`/`x_dim`/`y_dim`/`crs`
     inherit the framework defaults ("t"/"x"/"y"/4326).
 
-    Ignores the dataset's period_type/resolution config entirely --
-    periods are lead days (1..max_forecast_days) from the API, not a
-    calendar range, so `start`/`end` passed into periods() are unused.
+    Ignores the dataset's period_type/resolution config -- periods are
+    lead days (1..max_forecast_days) from the API, not a calendar range.
+    However, `start`/`end` passed into periods() ARE respected: lead days
+    outside that window are filtered out, since core rejects a plugin
+    whose materialized coverage exceeds the requested scope. The dataset
+    template must set `temporal_direction: future` so core resolves an
+    omitted start to "now" rather than requiring one.
     """
 
     max_concurrency = 1
@@ -104,9 +118,15 @@ class DailyForecastPlugin(BaseDatasetPlugin):
         return None
 
     async def periods(self, start: str, end: str) -> list[str]:
-        # start/end intentionally ignored -- this API is lead-day based,
-        # not a calendar range. Walk day=1.. until the API stops
-        # returning 200, capped at max_forecast_days.
+        # Per dhis2/open-climate-service#332, core never passes None here --
+        # an omitted start resolves to "now" and an omitted end resolves to
+        # a generous forward horizon (declared extents.temporal.end, or a
+        # year out). Both are always concrete ISO date strings. The plugin
+        # is responsible for clipping its own lead-day walk to `end`;
+        # core rejects materialized coverage that overshoots the request.
+        start_date = date.fromisoformat(start)
+        end_date = date.fromisoformat(end)
+
         periods: list[str] = []
         for day in range(1, self._max_forecast_days + 1):
             response = self._request_with_retry(day)
@@ -122,6 +142,27 @@ class DailyForecastPlugin(BaseDatasetPlugin):
             if not period_id:
                 logger.warning("day=%d response missing 'date'; skipping", day)
                 continue
+
+            period_date = date.fromisoformat(period_id)
+            if period_date > end_date:
+                # Stop rather than skip: lead days are strictly increasing,
+                # so nothing further in the walk can be <= end either.
+                logger.info(
+                    "Stopping forecast lead-day scan for %s at day=%d: "
+                    "%s exceeds requested end=%s",
+                    self._variable, day, period_id, end,
+                )
+                break
+            if period_date < start_date:
+                # Shouldn't normally happen for a `future`-direction
+                # dataset (start defaults to "now"), but honor an
+                # explicitly narrowed start if one was given.
+                logger.debug(
+                    "Skipping %s day=%d: %s is before requested start=%s",
+                    self._variable, day, period_id, start,
+                )
+                continue
+
             self._cache[period_id] = payload
             periods.append(period_id)
         return periods
