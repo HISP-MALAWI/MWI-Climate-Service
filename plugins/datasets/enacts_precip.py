@@ -16,8 +16,7 @@ import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.shared.time import utc_today
-from open_climate_service.streaming import BaseDatasetPlugin, daily_period_ids, normalize_period
+from open_climate_service.streaming import BaseDatasetPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +35,8 @@ _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 _MAX_RETRIES = 3
 _BACKOFF_BASE_SECONDS = 2.0
 
+class EnactsPrecipPlugin(BaseDatasetPlugin):
+    """IngestionPlugin for remote ENACTS precipitation data fetched via the DST API.
 
 class EnactsPrecipPlugin(BaseDatasetPlugin):
     """Streaming plugin for ENACTS daily precipitation (DCCMS DST API).
@@ -75,15 +76,6 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
                 "Chrome/120.0.0.0 Safari/537.36"
             ),
         }
-
-        if self._dataset not in _KNOWN_DAILY_DATASET_CODES:
-            logger.warning(
-                "dataset=%r is not in the confirmed set of ENACTS dataset "
-                "codes (%s). Verify against the DCCMS API before trusting "
-                "a full backfill.",
-                self._dataset,
-                sorted(_KNOWN_DAILY_DATASET_CODES),
-            )
 
     async def periods(self, start: str, end: str) -> list[str]:
         # No cheap availability-probe endpoint is known for this API (unlike

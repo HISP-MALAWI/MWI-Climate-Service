@@ -1,4 +1,4 @@
-# Sri Lanka Climate Service
+# Malawi Climate Service
 
 This project is based on the [Open Climate Service](https://dhis2.github.io/climate-api/) and provides climate data for Sri Lanka, including ERA5-Land reanalysis, CHIRPS3 precipitation, and WorldPop population data.
 

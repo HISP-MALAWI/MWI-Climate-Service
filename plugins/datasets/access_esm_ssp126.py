@@ -23,14 +23,14 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
-from open_climate_service.streaming.protocol import GridSpec
+from open_climate_service.streaming import BaseDatasetPlugin
 
 logger = logging.getLogger(__name__)
 
 _RES_DEG = 0.5
 
 
-class AccessEsmSsp126Plugin:
+class AccessEsmSsp126Plugin(BaseDatasetPlugin):
     """IngestionPlugin for locally-stored ACCESS-ESM1-5 SSP1-2.6 NetCDF files.
 
     One instance per variable/file. Opens the file lazily on first access
@@ -52,20 +52,6 @@ class AccessEsmSsp126Plugin:
             logger.info("Opening ACCESS-ESM1-5 SSP1-2.6 file: %s", self._file_path)
             self._ds = xr.open_dataset(self._file_path, chunks={})
         return self._ds
-
-    async def probe(self, bbox: list[float], **_: Any) -> GridSpec:
-        xmin, ymin, xmax, ymax = map(float, bbox)
-        nx = max(1, round((xmax - xmin) / _RES_DEG))
-        ny = max(1, round((ymax - ymin) / _RES_DEG))
-        return GridSpec(
-            shape=(ny, nx),
-            crs=4326,
-            dtype=np.dtype("float32"),
-            nodata=float("nan"),
-            time_dim="t",
-            x_dim="x",
-            y_dim="y",
-        )
 
     async def periods(self, start: str, end: str) -> list[str]:
         ds = self._open()
