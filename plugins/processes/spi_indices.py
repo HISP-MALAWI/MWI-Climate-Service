@@ -22,7 +22,6 @@ def spi_1(pr: xr.DataArray, baseline: str) -> xr.DataArray:
     """
     try:
         start_year, end_year = baseline.split("-")
-        # xclim expects YYYY-MM-DD format for calibration constraints
         cal_start = f"{start_year.strip()}-01-01"
         cal_end = f"{end_year.strip()}-12-31"
     except ValueError:
@@ -32,13 +31,10 @@ def spi_1(pr: xr.DataArray, baseline: str) -> xr.DataArray:
         pr = pr.assign_coords(time=pd.to_datetime(pr.time.values))
     pr = pr.sortby("time")
 
-    # 1. Resample full precipitation series to monthly sums
     pr_monthly = pr.resample(time="MS").sum(dim="time")
 
-    # 2. Fix the unit signature for xclim
     pr_monthly.attrs["units"] = "mm/day"
 
-    # 3. Compute SPI passing the calibration date ranges directly
     spi_1 = xci.standardized_precipitation_index(  # type: ignore
         pr=pr_monthly,
         freq="MS",

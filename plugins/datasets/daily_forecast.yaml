@@ -1,0 +1,614 @@
+- id: tmin_forecast_daily
+  name: Minimum Temperature (Daily Forecast)
+  short_name: Min Temp
+  variable: tmin
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmin
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - -10
+    - 40
+- id: tmax_forecast_daily
+  name: Maximum Temperature (Daily Forecast)
+  short_name: Max Temp
+  variable: tmax
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmax
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: YlOrRd
+    range:
+    - 15
+    - 45
+- id: tmean_forecast_daily
+  name: Mean Temperature (Daily Forecast)
+  short_name: Mean Temp
+  variable: tmean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmean
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+    standard_name: air_temperature
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - 5
+    - 35
+- id: precipitation_forecast_daily
+  name: Precipitation (Daily Forecast)
+  short_name: Precip
+  variable: tp
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tp
+      max_forecast_days: 7
+  units: mm
+  cf_attributes:
+    units: mm
+    standard_name: lwe_thickness_of_precipitation_amount
+    cell_methods: 'time: sum'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Blues
+    range:
+    - 0
+    - 50
+- id: rh_mean_forecast_daily
+  name: Mean Relative Humidity (Daily Forecast)
+  short_name: RH Mean
+  variable: rh2_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: rh2_mean
+      max_forecast_days: 7
+  units: '%'
+  cf_attributes:
+    units: '%'
+    standard_name: relative_humidity
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: BuPu
+    range:
+    - 0
+    - 100
+- id: rh_max_forecast_daily
+  name: Maximum Relative Humidity (Daily Forecast)
+  short_name: RH Max
+  variable: rh2_max
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: rh2_max
+      max_forecast_days: 7
+  units: '%'
+  cf_attributes:
+    units: '%'
+    standard_name: relative_humidity
+    cell_methods: 'time: maximum'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: BuPu
+    range:
+    - 0
+    - 100
+- id: wind_mean_forecast_daily
+  name: Mean Wind Speed (Daily Forecast)
+  short_name: Wind Mean
+  variable: wind10_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: wind10_mean
+      max_forecast_days: 7
+  units: m/s
+  cf_attributes:
+    units: m/s
+    standard_name: wind_speed
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Viridis
+    range:
+    - 0
+    - 15
+- id: wind_max_forecast_daily
+  name: Maximum Wind Speed (Daily Forecast)
+  short_name: Wind Max
+  variable: wind10_max
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: wind10_max
+      max_forecast_days: 7
+  units: m/s
+  cf_attributes:
+    units: m/s
+    standard_name: wind_speed
+    cell_methods: 'time: maximum'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Viridis
+    range:
+    - 0
+    - 25
+- id: pressure_forecast_daily
+  name: Surface Pressure (Daily Forecast)
+  short_name: Pressure
+  variable: psfc_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: psfc_mean
+      max_forecast_days: 7
+  units: Pa
+  cf_attributes:
+    units: Pa
+    standard_name: surface_air_pressure
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: RdBu
+    range:
+    - 85000
+    - 102000
+- id: soil_moisture_forecast_daily
+  name: Soil Moisture, Top Layer (Daily Forecast)
+  short_name: Soil Moisture
+  variable: sm_top
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: sm_top
+      max_forecast_days: 7
+  units: '1'
+  cf_attributes:
+    units: '1'
+    standard_name: volume_fraction_of_condensed_water_in_soil
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: BrBG
+    range:
+    - 0
+    - 0.5
+- id: soil_temperature_mean_forecast_daily
+  name: Mean Soil Temperature (Daily Forecast)
+  short_name: Soil Temp Mean
+  variable: soiltemp_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: soiltemp_mean
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+    standard_name: soil_temperature
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - 5
+    - 35
+- id: soil_temperature_min_forecast_daily
+  name: Minimum Soil Temperature (Daily Forecast)
+  short_name: Soil Temp Min
+  variable: soiltemp_min
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: soiltemp_min
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+    standard_name: soil_temperature
+    cell_methods: 'time: minimum'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - -5
+    - 30
+- id: cloud_cover_forecast_daily
+  name: Cloud Cover (Daily Forecast)
+  short_name: Cloud Cover
+  variable: cldfra_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: cldfra_mean
+      max_forecast_days: 7
+  units: '1'
+  cf_attributes:
+    units: '1'
+    standard_name: cloud_area_fraction
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Greys
+    range:
+    - 0
+    - 1
+- id: pbl_height_forecast_daily
+  name: Planetary Boundary Layer Height (Daily Forecast)
+  short_name: PBL Height
+  variable: pblh_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: pblh_mean
+      max_forecast_days: 7
+  units: m
+  cf_attributes:
+    units: m
+    standard_name: atmosphere_boundary_layer_thickness
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Viridis
+    range:
+    - 0
+    - 2000
+- id: frost_risk_forecast_daily
+  name: Frost Risk (Daily Forecast)
+  short_name: Frost Risk
+  variable: frost_risk
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: frost_risk
+      max_forecast_days: 7
+  units: '1'
+  cf_attributes:
+    units: '1'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: Reds
+    range:
+    - 0
+    - 1
+- id: specific_humidity_forecast_daily
+  name: Mean Specific Humidity (Daily Forecast)
+  short_name: Specific Humidity
+  variable: q2_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: q2_mean
+      max_forecast_days: 7
+  units: kg/kg
+  cf_attributes:
+    units: kg kg-1
+    standard_name: specific_humidity
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: BuPu
+    range:
+    - 0
+    - 0.025
+- id: skin_temperature_mean_forecast_daily
+  name: Mean Skin Temperature (Daily Forecast)
+  short_name: Skin Temp Mean
+  variable: tsk_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tsk_mean
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+    standard_name: surface_temperature
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - 5
+    - 40
+- id: skin_temperature_min_forecast_daily
+  name: Minimum Skin Temperature (Daily Forecast)
+  short_name: Skin Temp Min
+  variable: tsk_min
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tsk_min
+      max_forecast_days: 7
+  units: °C
+  cf_attributes:
+    units: °C
+    standard_name: surface_temperature
+    cell_methods: 'time: minimum'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: CoolWarm
+    range:
+    - -5
+    - 30
+- id: shortwave_radiation_forecast_daily
+  name: Mean Downward Shortwave Radiation (Daily Forecast)
+  short_name: Shortwave Rad
+  variable: swdown_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: swdown_mean
+      max_forecast_days: 7
+  units: W/m^2
+  cf_attributes:
+    units: W m-2
+    standard_name: surface_downwelling_shortwave_flux_in_air
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: YlOrRd
+    range:
+    - 0
+    - 350
+- id: longwave_radiation_forecast_daily
+  name: Mean Downward Longwave Radiation (Daily Forecast)
+  short_name: Longwave Rad
+  variable: glw_mean
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-05'
+      resolution: P1D
+  ingestion:
+    plugin: datasets.daily_forecast.DailyForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: glw_mean
+      max_forecast_days: 7
+  units: W/m^2
+  cf_attributes:
+    units: W m-2
+    standard_name: surface_downwelling_longwave_flux_in_air
+    cell_methods: 'time: mean'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: YlOrRd
+    range:
+    - 200
+    - 450

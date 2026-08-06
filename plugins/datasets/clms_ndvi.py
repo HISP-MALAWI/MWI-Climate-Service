@@ -123,6 +123,6 @@ class ClmsNdviPlugin(BaseDatasetPlugin):
             da = da.isel(y=slice(None, None, -1))
 
         ds = da.to_dataset(name=_VAR)
-        ds = ds.expand_dims(time=[np.datetime64(period_id)])
+        ds = ds.expand_dims(t=[np.datetime64(period_id)])
         ds = ds.load()
         return ds

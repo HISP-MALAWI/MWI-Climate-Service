@@ -13,7 +13,7 @@
   ingestion:
     plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
-      file_path: ./data/ACCESS-ESM1-5_ssp126/tavg.nc
+      file_path: G:/Climate stuff/data/ACCESS-ESM1-5_ssp126/tavg.nc
       variable: tavg
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)

@@ -1,0 +1,27 @@
+- id: clms_gpp_dekad
+  name: Gross Primary Production (CLMS)
+  short_name: GPP
+  variable: gpp
+  period_type: daily # technically not right. data is returned in dekads. needs aggregation to monthly
+  sync:
+    kind: temporal
+    execution: append
+  extents:
+    spatial:
+      bbox: [-180, -60, 180, 80]   # global source coverage (CLMS GPP 300m product extent)
+    temporal:
+      begin: "2014-01-01"
+      resolution: P10D
+  ingestion:
+    plugin: datasets.clms_primary_productivity.ClmsPrimaryProductivityPlugin
+    params:
+      collection: clms_gpp_global_300m_10daily_v2_cog
+      asset_key: gpp300_gpp
+      variable: gpp
+  units: "gC/m²/day"
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS GPP 300m v2
+  source_url: https://land.copernicus.eu/en/products/vegetation/gross-primary-production-v2-0-300m
+  display:
+    colormap: YlGn
+    range: [0, 15]

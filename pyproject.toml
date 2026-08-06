@@ -4,11 +4,19 @@ version = "0.1.0"
 requires-python = ">=3.13,<3.14"
 description = "Open Climate Service instance for Malawi"
 dependencies = [
+    "open-climate-service[server]==0.1.0",
     "boto3",
     "cdsapi>=0.7.7",
     "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git",
     "ecmwf-datastores-client",
     "pystac-client>=0.9.0",
+    "uvicorn>=0.49.0",
+    "fastapi>=0.137.0",
+    "dotenv>=0.9.9",
+    "h5netcdf>=1.8.1",
+    "h5py>=3.16.0",
+    "dhis2-client",
+    "python-dotenv>=1.2.2",
 ]
 
 [tool.uv]
@@ -39,3 +47,4 @@ explicit = true
 [tool.uv.sources]
 open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "main" }
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
+dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
