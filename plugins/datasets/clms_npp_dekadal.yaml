@@ -1,0 +1,30 @@
+- id: clms_npp_dekad
+  name: Net Primary Production (CLMS)
+  short_name: NPP
+  variable: npp
+  period_type: daily # technically not right. data is returned in dekads. needs aggregation to monthly
+  sync:
+    kind: temporal
+    execution: append
+  extents:
+    spatial:
+      bbox: [-180, -60, 180, 80]   # global source coverage (CLMS NPP 300m product extent)
+    temporal:
+      begin: "2014-01-01"
+      resolution: P10D
+  ingestion:
+    plugin: datasets.clms_primary_productivity.ClmsPrimaryProductivityPlugin
+    params:
+      collection: clms_npp_global_300m_10daily_v2_cog
+      asset_key: npp300_npp
+      variable: npp
+  units: "gC/m²/day"
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS NPP 300m v2
+  source_url: https://land.copernicus.eu/en/products/vegetation/net-primary-production-v2-0-300m
+  display:
+    # red = low or negative NPP (vegetation losing carbon — respiration > photosynthesis),
+    # green = high net production
+    colormap: RdYlGn
+    # account for negative npp values 
+    range: [-2, 12]
