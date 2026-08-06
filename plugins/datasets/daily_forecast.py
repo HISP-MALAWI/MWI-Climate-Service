@@ -27,6 +27,7 @@ Source: Department of Climate Change and Meteorological Services (DCCMS).
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from datetime import date
@@ -129,7 +130,7 @@ class DailyForecastPlugin(BaseDatasetPlugin):
 
         periods: list[str] = []
         for day in range(1, self._max_forecast_days + 1):
-            response = self._request_with_retry(day)
+            response = await asyncio.to_thread(self._request_with_retry, day)
             if response is None or response.status_code != 200:
                 logger.info(
                     "Stopping forecast lead-day scan for %s at day=%d (%s)",
@@ -177,7 +178,7 @@ class DailyForecastPlugin(BaseDatasetPlugin):
         """
         xmin, ymin, xmax, ymax = map(float, bbox)
 
-        payload = self._cache.pop(period_id, None)
+        payload = self._cache.get(period_id, None)
         if payload is None:
             # Standalone call without a prior periods() pass -- look the
             # date up by scanning lead days again.
@@ -221,6 +222,7 @@ class DailyForecastPlugin(BaseDatasetPlugin):
 
         da = da.rename({"lon": self.x_dim, "lat": self.y_dim})
         da = da.astype("float32")
-        da.attrs["units"] = payload.get("units", "")
+        if units := payload.get("units"):
+            da.attrs["units"] = units
 
         return normalize_period(da, variable=self._variable, period=period_id).load()
