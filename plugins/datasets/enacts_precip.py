@@ -36,9 +36,6 @@ _MAX_RETRIES = 3
 _BACKOFF_BASE_SECONDS = 2.0
 
 class EnactsPrecipPlugin(BaseDatasetPlugin):
-    """IngestionPlugin for remote ENACTS precipitation data fetched via the DST API.
-
-class EnactsPrecipPlugin(BaseDatasetPlugin):
     """Streaming plugin for ENACTS daily precipitation (DCCMS DST API).
 
     Subclasses BaseDatasetPlugin, so `time_dim`/`x_dim`/`y_dim`/`crs`
