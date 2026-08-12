@@ -2,7 +2,7 @@
   name: Gross Primary Production (CLMS)
   short_name: GPP
   variable: gpp
-  period_type: daily
+  period_type: dekadal
   sync:
     kind: temporal
   extents:
@@ -10,7 +10,6 @@
       bbox: [-180, -90, 180, 90]
     temporal:
       begin: "2014-01-01"
-      resolution: P10D
   ingestion:
     plugin: datasets.clms_gpp.ClmsGppPlugin
     params: {}

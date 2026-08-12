@@ -23,8 +23,8 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
+from open_climate_service.shared.time import dekad_period_ids
 from open_climate_service.streaming import BaseDatasetPlugin
-from .clms_gpp import _dekadal_dates
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,11 @@ class ClmsNdviPlugin(BaseDatasetPlugin):
         if not items:
             return []
         latest = items[0].datetime.date().isoformat()
-        clamped_end = min(end[:10], latest)
-        return _dekadal_dates(clamped_start, clamped_end)
+        # `dekad_period_ids` snaps the start down to the dekad containing it, where the local
+        # enumerator this replaced skipped that dekad. Snapping is the correct reading — the
+        # dekad is the smallest unit the data has, so a range starting on the 15th still needs
+        # the 11th–20th dekad — and it matches how core normalises a dekadal period id.
+        return dekad_period_ids(clamped_start, end[:10], cutoff=latest)
 
     async def fetch_period(self, period_id: str, bbox: list[float], **_: Any) -> xr.Dataset:
         import os
