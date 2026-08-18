@@ -1,0 +1,77 @@
+- id: enacts_precip_daily
+  name: Precipitation (ENACTS)
+  short_name: Rainfall
+  period_type: daily
+  variable: precip
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "1981-01-01"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.enacts.EnactsPlugin
+    params:
+      base_url: "http://168.253.224.242:9091/dst"
+      variable: "precip"
+      dataset: "MON"
+  units: "mm"
+  cf_attributes:
+    units: "mm"
+  resolution: 0.05° × 0.05° (~5 km)
+  source: Department of Climate Change and Meteorological Services.
+  display:
+    colormap: Blues
+    range: [0, 50]
+
+- id: enacts_tmax_daily
+  name: Maximum Temperature (ENACTS)
+  short_name: Tmax
+  period_type: daily
+  variable: tmax
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "1981-01-01"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.enacts.EnactsPlugin
+    params:
+      base_url: "http://168.253.224.242:9091/dst"
+      variable: "tmax"
+      dataset: "MON"
+  units: "degC"
+  cf_attributes:
+    units: "degC"
+  resolution: 0.05° × 0.05° (~5 km)
+  source: Department of Climate Change and Meteorological Services.
+  display:
+    colormap: Reds
+    range: [20, 40]
+
+- id: enacts_tmin_daily
+  name: Minimum Temperature (ENACTS)
+  short_name: Tmin
+  period_type: daily
+  variable: tmin
+  sync:
+    kind: temporal
+  extents:
+    temporal:
+      begin: "1981-01-01"
+      resolution: P1D
+  ingestion:
+    plugin: datasets.enacts.EnactsPlugin
+    params:
+      base_url: "http://168.253.224.242:9091/dst"
+      variable: "tmin"
+      dataset: "MON"
+  units: "degC"
+  cf_attributes:
+    units: "degC"
+  resolution: 0.05° × 0.05° (~5 km)
+  source: Department of Climate Change and Meteorological Services.
+  display:
+    colormap: Blues_r
+    range: [5, 25]
