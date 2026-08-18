@@ -2,7 +2,7 @@
   name: Net Primary Production (CLMS)
   short_name: NPP
   variable: npp
-  period_type: daily # technically not right. data is returned in dekads. needs aggregation to monthly
+  period_type: dekadal
   sync:
     kind: temporal
     execution: append
@@ -11,7 +11,6 @@
       bbox: [-180, -60, 180, 80]   # global source coverage (CLMS NPP 300m product extent)
     temporal:
       begin: "2014-01-01"
-      resolution: P10D
   ingestion:
     plugin: datasets.clms_primary_productivity.ClmsPrimaryProductivityPlugin
     params:

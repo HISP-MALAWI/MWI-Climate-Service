@@ -44,37 +44,11 @@ _S3_BUCKET = "eodata"
 _FIRST_YEAR = 2014
 
 # Dekad day-of-month offsets: 1st, 11th, 21st
-_DEKAD_DAYS = (1, 11, 21)
-
 # Physical flag values to mask out of the raw raster, before the CF scale/offset.
 # (NPP can legitimately be negative — net of respiration — so we mask only the
 # flags, not all sub-zero values.)
 _FLAG_MISSING = -1
 _FLAG_WATER = -2
-
-
-def _dekad_dates(start: str, end: str) -> list[str]:
-    """Return all dekad dates (1st, 11th, 21st) within [start, end]."""
-    d_start = date.fromisoformat(start[:10])
-    d_end = date.fromisoformat(end[:10])
-    results = []
-    year = d_start.year
-    month = d_start.month
-    while True:
-        for day in _DEKAD_DAYS:
-            try:
-                d = date(year, month, day)
-            except ValueError:
-                continue
-            if d < d_start:
-                continue
-            if d > d_end:
-                return results
-            results.append(d.isoformat())
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
 
 
 class ClmsPrimaryProductivityPlugin:
@@ -124,8 +98,11 @@ class ClmsPrimaryProductivityPlugin:
         latest = await asyncio.to_thread(self._latest_date)
         if latest is None:
             return []
-        clamped_end = min(end[:10], latest)
-        return _dekad_dates(clamped_start, clamped_end)
+        # `dekad_period_ids` snaps the start down to the dekad containing it, where the local
+        # enumerator this replaced skipped that dekad. Snapping is the correct reading — the
+        # dekad is the smallest unit the data has, so a range starting on the 15th still needs
+        # the 11th–20th dekad — and it matches how core normalises a dekadal period id.
+        return dekad_period_ids(clamped_start, end[:10], cutoff=latest)
 
     def _latest_date(self) -> str | None:
         """Return the date of the most recent published dekad, or None if empty."""
