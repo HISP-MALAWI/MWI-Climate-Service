@@ -1,0 +1,86 @@
+- id: rain_hazard_forecast_daily
+  name: Rainfall Hazard (Forecast)
+  short_name: Rain Hazard
+  variable: rain_hazard
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-25'          # set to actual forecast issue date
+      resolution: P1D
+  ingestion:
+    plugin: datasets.climate_hazards.HazardForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: rain_hazard
+      endpoint: hazards            # NEW — only add once the plugin actually supports this
+      max_forecast_days: 7
+  units: '1'                       # dimensionless class code — confirm
+  cf_attributes:
+    units: '1'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: rdylgn_r
+    range: [0, 3]
+
+- id: tmin_hazard_forecast_daily
+  name: Min Temperature Hazard (Forecast)
+  short_name: Tmin Hazard
+  variable: tmin_hazard
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-25'          # set to actual forecast issue date
+      resolution: P1D
+  ingestion:
+    plugin: datasets.climate_hazards.HazardForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmin_hazard
+      endpoint: hazards            # NEW — only add once the plugin actually supports this
+      max_forecast_days: 7
+  units: '1'                       # dimensionless class code — confirm
+  cf_attributes:
+    units: '1'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: rdylgn_r
+    range: [0, 3]
+
+- id: tmax_hazard_forecast_daily
+  name: Max Temperature Hazard (Forecast)
+  short_name: Tmax Hazard
+  variable: tmax_hazard
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  extents:
+    temporal:
+      begin: '2026-08-25'          # set to actual forecast issue date
+      resolution: P1D
+  ingestion:
+    plugin: datasets.climate_hazards.HazardForecastPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmax_hazard
+      endpoint: hazards            # NEW — only add once the plugin actually supports this
+      max_forecast_days: 7
+  units: '1'                       # dimensionless class code — confirm
+  cf_attributes:
+    units: '1'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: rdylgn_r
+    range: [0, 3]
