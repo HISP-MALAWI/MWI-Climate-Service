@@ -1,0 +1,71 @@
+# plugins/datasets/mwi_seasonal_forecast.yaml
+#
+# Two OCS dataset templates for the locally supplied 2026-2027 Malawi
+# seasonal forecast files. Both use the same streaming plugin
+# (LocalNetCDFForecastPlugin, in mwi_seasonal_forecast.py) and differ only
+# in ingestion.params.
+#
+# `source: DCCMS` is a placeholder, matching the DCCMS gridded forecast API
+# this instance already ingests from elsewhere (HazardForecastPlugin,
+# DailyForecastPlugin). If these two files actually came from somewhere
+# else, change `source:` and add a `source_url:`.
+
+- id: mwi_tmean_seasonal_forecast_2026_2027
+  name: "Malawi Seasonal Mean Temperature Forecast (Oct 2026 \u2013 Mar 2027)"
+  short_name: Tmean Forecast
+  variable: tmean
+  period_type: monthly
+  temporal_direction: future
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.seasonal_forecast.LocalNetCDFForecastPlugin
+    params:
+      nc_path: forecast_data/tmean_seasonal_forecast_2026_2027.nc
+      source_variable: Tmean
+      variable: tmean
+  units: degC
+  standard_name: air_temperature
+  cell_methods: "time: mean"
+  resolution: 11 km x 11 km
+  source: DCCMS
+  extents:
+    spatial:
+      bbox: [32.32, -17.6, 36.22, -9.1]
+      crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+    temporal:
+      begin: "2026-10-01"
+      end: "2027-03-01"
+      trs: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+      resolution: P1M
+
+- id: mwi_rainfall_seasonal_forecast_2026_2027
+  name: "Malawi Seasonal Rainfall Forecast (Oct 2026 \u2013 Apr 2027)"
+  short_name: Rainfall Forecast
+  variable: rainfall
+  period_type: monthly
+  temporal_direction: future
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.seasonal_forecast.LocalNetCDFForecastPlugin
+    params:
+      nc_path: "forecast_data/malawi_forecast_26_27_3d (1).nc"
+      source_variable: rainfall_forecast
+      variable: rainfall
+  units: mm
+  standard_name: lwe_thickness_of_precipitation_amount
+  cell_methods: "time: sum"
+  resolution: 7 km x 7 km
+  source: DCCMS
+  extents:
+    spatial:
+      bbox: [32.5, -17.2, 35.97, -9.25]
+      crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+    temporal:
+      begin: "2026-10-01"
+      end: "2027-04-01"
+      trs: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+      resolution: P1M
