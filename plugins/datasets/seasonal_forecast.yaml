@@ -39,6 +39,11 @@
       end: "2027-03-01"
       trs: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
       resolution: P1M
+  display:
+    colormap: RdYlBu_r
+    range:
+    - 21
+    - 31.5
 
 - id: mwi_rainfall_seasonal_forecast_2026_2027
   name: "Malawi Seasonal Rainfall Forecast (Oct 2026 \u2013 Apr 2027)"
@@ -52,7 +57,7 @@
   ingestion:
     plugin: datasets.seasonal_forecast.LocalNetCDFForecastPlugin
     params:
-      nc_path: "forecast_data/malawi_forecast_26_27_3d (1).nc"
+      nc_path: forecast_data/malawi_forecast_26_27_3d.nc
       source_variable: rainfall_forecast
       variable: rainfall
   units: mm
@@ -69,3 +74,8 @@
       end: "2027-04-01"
       trs: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
       resolution: P1M
+  display:
+    colormap: Blues
+    range:
+    - 16
+    - 350
