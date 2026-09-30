@@ -19,6 +19,7 @@
   source: MODIS Terra+Aqua MCD12Q1 v061 — IGBP classification (LC_Type1)
   source_url: https://lpdaac.usgs.gov/products/mcd12q1v061/
   display:
+    nodata: 0  # fill and gaps between tiles; not a land cover class
     palette:
       0:   "#000000"  # Unclassified
       1:   "#1c6330"  # Evergreen Needleleaf Forests
