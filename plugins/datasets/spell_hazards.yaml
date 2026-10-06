@@ -1,0 +1,399 @@
+# Spell hazard datasets served by the hazard grid API.
+# Source: http://168.253.224.247:8000/grid/spells?variable=<hazard>_<metric>
+# Generated: 3 hazards x 6 metrics = 18 templates.
+
+- id: dry_spell_total_spell_days
+  name: Dry spell total spell days
+  short_name: Dry spell total spell days
+  variable: dry_spell_total_spell_days
+  description: Total number of days spent inside dry spells (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_total_spell_days
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: dry_spell_max_spell_length
+  name: Dry spell max spell length
+  short_name: Dry spell max spell length
+  variable: dry_spell_max_spell_length
+  description: Length of the longest single dry spell (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_max_spell_length
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: dry_spell_spell_count
+  name: Dry spell spell count
+  short_name: Dry spell spell count
+  variable: dry_spell_spell_count
+  description: Number of distinct dry spells (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_spell_count
+  units: "1"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: dry_spell_max_spell_start_idx
+  name: Dry spell max spell start index
+  short_name: Dry spell max spell start index
+  variable: dry_spell_max_spell_start_idx
+  description: Time index at which the longest dry spell starts (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_max_spell_start_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: dry_spell_max_spell_end_idx
+  name: Dry spell max spell end index
+  short_name: Dry spell max spell end index
+  variable: dry_spell_max_spell_end_idx
+  description: Time index at which the longest dry spell ends (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_max_spell_end_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: dry_spell_hazard
+  name: Dry spell hazard
+  short_name: Dry spell hazard
+  variable: dry_spell_hazard
+  description: Combined dry spell hazard indicator (consecutive dry days).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: max
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: dry_spell_hazard
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorbr
+
+- id: heatwave_total_spell_days
+  name: Heatwave total spell days
+  short_name: Heatwave total spell days
+  variable: heatwave_total_spell_days
+  description: Total number of days spent inside heatwave spells (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_total_spell_days
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: heatwave_max_spell_length
+  name: Heatwave max spell length
+  short_name: Heatwave max spell length
+  variable: heatwave_max_spell_length
+  description: Length of the longest single heatwave spell (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_max_spell_length
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: heatwave_spell_count
+  name: Heatwave count
+  short_name: Heatwave count
+  variable: heatwave_spell_count
+  description: Number of distinct heatwave spells (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_spell_count
+  units: "1"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: heatwave_max_spell_start_idx
+  name: Heatwave max spell start index
+  short_name: Heatwave max spell start index
+  variable: heatwave_max_spell_start_idx
+  description: Time index at which the longest heatwave spell starts (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_max_spell_start_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: heatwave_max_spell_end_idx
+  name: Heatwave max spell end index
+  short_name: Heatwave max spell end index
+  variable: heatwave_max_spell_end_idx
+  description: Time index at which the longest heatwave spell ends (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_max_spell_end_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: heatwave_hazard
+  name: Heatwave hazard
+  short_name: Heatwave hazard
+  variable: heatwave_hazard
+  description: Combined heatwave hazard indicator (consecutive days of abnormally high temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: max
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: heatwave_hazard
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: ylorrd
+
+- id: cold_spell_total_spell_days
+  name: Cold spell total spell days
+  short_name: Cold spell total spell days
+  variable: cold_spell_total_spell_days
+  description: Total number of days spent inside cold spells (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_total_spell_days
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
+
+- id: cold_spell_max_spell_length
+  name: Cold spell max spell length
+  short_name: Cold spell max spell length
+  variable: cold_spell_max_spell_length
+  description: Length of the longest single cold spell (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_max_spell_length
+  units: "d"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
+
+- id: cold_spell_spell_count
+  name: Cold spell spell count
+  short_name: Cold spell spell count
+  variable: cold_spell_spell_count
+  description: Number of distinct cold spells (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: mean
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_spell_count
+  units: "1"
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
+
+- id: cold_spell_max_spell_start_idx
+  name: Cold spell max spell start index
+  short_name: Cold spell max spell start index
+  variable: cold_spell_max_spell_start_idx
+  description: Time index at which the longest cold spell starts (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_max_spell_start_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
+
+- id: cold_spell_max_spell_end_idx
+  name: Cold spell max spell end index
+  short_name: Cold spell max spell end index
+  variable: cold_spell_max_spell_end_idx
+  description: Time index at which the longest cold spell ends (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: nearest
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_max_spell_end_idx
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
+
+- id: cold_spell_hazard
+  name: Cold spell hazard
+  short_name: Cold spell hazard
+  variable: cold_spell_hazard
+  description: Combined cold spell hazard indicator (consecutive days of abnormally low temperature).
+  temporal_direction: future
+  period_type: daily
+  sync:
+    kind: temporal
+    execution: append
+  ingestion:
+    plugin: datasets.spell_hazards.SpellHazardPlugin
+    resampling: max
+    params:
+      base_url: http://168.253.224.247:8000
+      source_variable: cold_spell_hazard
+  units: ""
+  source: Spell hazard grid API
+  source_url: http://168.253.224.247:8000/grid/spells
+  display:
+    colormap: blues
