@@ -133,6 +133,9 @@
   source_url: http://168.253.224.247:8000/grid/spells
   display:
     colormap: ylorbr
+    range:
+    - 0
+    - 4
 
 - id: heatwave_total_spell_days
   name: Heatwave total spell days
@@ -265,6 +268,9 @@
   source_url: http://168.253.224.247:8000/grid/spells
   display:
     colormap: ylorrd
+    range:
+    - 0
+    - 4
 
 - id: cold_spell_total_spell_days
   name: Cold spell total spell days
