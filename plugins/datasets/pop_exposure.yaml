@@ -1,0 +1,61 @@
+# plugins_dir/rasters/population_exposure.yaml
+#
+# Static dataset templates for datasets DERIVED by the
+# population_exposure_by_hazard_workflow. No ingestion plugin: the data is
+# produced by the workflow, not fetched. `id` must equal the workflow's
+# output_dataset_id, and `variable` must equal its `variable` argument.
+#
+# One template per published variable. Copy this pair per hazard
+# (dry_spell, flood, ...) and change the ids, names and descriptions.
+
+- id: dry_spell_population_exposure
+  name: Population exposed to dry spells
+  short_name: Exposed population
+  description: >-
+    People per 100 m grid cell living where the dry-spell hazard category is 1-4.
+    Cells with no hazard are 0; cells with missing hazard or population data are
+    missing. Derived from WorldPop Global2 and the dry_spell_hazard dataset.
+  variable: exposed_population
+  # Match the hazard dataset's cadence: the output keeps the hazard snapshot's
+  # time axis, not WorldPop's yearly one.
+  period_type: daily
+  # The hazard is a forecast, but the OCS docs say `temporal_direction: future`
+  # cannot be combined with `sync.kind: static` (registration rejects it).
+  # Derived datasets must be static, so this stays at the default. `past` only
+  # affects the ingest form's start/end handling, which static datasets skip.
+  # Try `future` if your OCS version accepts it.
+  sync:
+    kind: static
+  produced_by: population_exposure_by_hazard_workflow
+  units: people
+  resolution: 100m x 100m
+  source: WorldPop Global2 and dry_spell_hazard
+  source_url: https://hub.worldpop.org/project/categories?id=3
+  license: CC-BY-4.0
+  display:
+    colormap: reds
+    range: [0.5, 100.0]
+  # Pyramid levels default to `mean`, which understates population counts when
+  # zoomed out (display only; level 0 is unchanged). If your version accepts
+  # `ingestion.resampling` on a template without `ingestion.plugin`, set
+  # `sum`. Not verified here, so left off.
+
+- id: dry_spell_hazard_severity_100m
+  name: Dry-spell hazard severity on the population grid
+  short_name: Hazard severity
+  description: >-
+    Dry-spell hazard category (0 = none, 1-4 = increasing severity) resampled to
+    the WorldPop 100 m grid with nearest-neighbour resampling.
+  variable: hazard_severity
+  period_type: daily
+  sync:
+    kind: static
+  produced_by: population_exposure_by_hazard_workflow
+  units: ""          # dimensionless category code
+  resolution: 100m x 100m
+  source: dry_spell_hazard
+  display:
+    colormap: reds
+    range: [0.0, 4.0]
+  # Categorical: `mode` or `nearest` is the correct pyramid resampling (the
+  # default `mean` would invent classes such as 2.5), same caveat as above.
