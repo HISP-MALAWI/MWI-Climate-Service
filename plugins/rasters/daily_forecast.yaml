@@ -11,7 +11,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tmin
@@ -27,6 +27,7 @@
     range:
     - -10
     - 40
+    
 - id: tmax_forecast_daily
   name: Maximum Temperature (Daily Forecast)
   short_name: Max Temp
@@ -40,7 +41,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tmax
@@ -69,7 +70,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tmean
@@ -100,7 +101,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tp
@@ -131,7 +132,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: rh2_mean
@@ -162,7 +163,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: rh2_max
@@ -193,7 +194,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: wind10_mean
@@ -224,7 +225,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: wind10_max
@@ -255,7 +256,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: psfc_mean
@@ -286,7 +287,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: sm_top
@@ -317,7 +318,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: soiltemp_mean
@@ -348,7 +349,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: soiltemp_min
@@ -379,7 +380,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: cldfra_mean
@@ -410,7 +411,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: pblh_mean
@@ -441,7 +442,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: frost_risk
@@ -470,7 +471,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: q2_mean
@@ -501,7 +502,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tsk_mean
@@ -532,7 +533,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: tsk_min
@@ -563,7 +564,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: swdown_mean
@@ -594,7 +595,7 @@
       begin: '2026-08-05'
       resolution: P1D
   ingestion:
-    plugin: datasets.daily_forecast.DailyForecastPlugin
+    plugin: rasters.daily_forecast.DailyForecastPlugin
     params:
       base_url: http://168.253.224.247:8000/
       dataset: glw_mean

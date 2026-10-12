@@ -12,7 +12,7 @@
     temporal:
       begin: "2014-01-01"
   ingestion:
-    plugin: datasets.clms_primary_productivity.ClmsPrimaryProductivityPlugin
+    plugin: rasters.clms_primary_productivity.ClmsPrimaryProductivityPlugin
     params:
       collection: clms_npp_global_300m_10daily_v2_cog
       asset_key: npp300_npp

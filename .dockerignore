@@ -1,0 +1,22 @@
+# Virtual environments
+.venv
+venv
+env/
+ENV/
+
+# Python cache & build files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Git & IDE files
+.git
+.gitignore
+.vscode/
+.idea/
+
+# Local data (if you download large files locally during dev)
+data/
