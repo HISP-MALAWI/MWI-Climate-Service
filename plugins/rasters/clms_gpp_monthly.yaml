@@ -1,0 +1,14 @@
+- id: clms_gpp_monthly
+  name: Gross Primary Production (CLMS) - monthly mean
+  short_name: GPP
+  variable: gpp
+  period_type: monthly
+  sync:
+    kind: static
+  units: "gC/m²/day"
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS GPP 300m v2
+  source_url: https://land.copernicus.eu/en/products/vegetation/gross-primary-production-v2-0-300m
+  display:
+    colormap: YlGn
+    range: [0, 15]

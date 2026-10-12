@@ -1,0 +1,17 @@
+- id: clms_npp_monthly
+  name: Net Primary Production (CLMS) - monthly mean
+  short_name: NPP
+  variable: npp
+  period_type: monthly
+  sync:
+    kind: static
+  units: "gC/m²/day"
+  resolution: 300m x 300m
+  source: Copernicus Land Monitoring Service — CLMS NPP 300m v2
+  source_url: https://land.copernicus.eu/en/products/vegetation/net-primary-production-v2-0-300m
+  display:
+    # red = low or negative NPP (vegetation losing carbon — respiration > photosynthesis),
+    # green = high net production
+    colormap: RdYlGn
+    # account for negative npp values
+    range: [-2, 12]
