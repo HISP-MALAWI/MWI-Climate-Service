@@ -50,29 +50,44 @@ The `population_exposure_by_hazard` workflow overlays a published hazard
 snapshot with the built-in WorldPop Global2 100 m total-population dataset.
 Hazard categories 1-4 are treated as exposed (4 is the most severe); category
 0 is unexposed. Severity is resampled to the WorldPop grid using
-nearest-neighbour resampling. The output is published as a managed Zarr dataset
-with two variables: `exposed_population` (people per WorldPop cell) and
-`hazard_severity` (category 0-4).
+nearest-neighbour resampling. Each run publishes one variable as a managed
+Zarr dataset, chosen with `variable`:
+
+| `variable` | `output_dataset_id` | Contents |
+| --- | --- | --- |
+| `exposed_population` (default) | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
+| `hazard_severity` | `dry_spell_hazard_severity_100m` | Hazard category 0-4 on the WorldPop grid |
+
+`output_dataset_id` must name a template in `plugins/rasters/pop_exposure.yaml`
+whose `variable` matches, so run the workflow once per variable.
 
 Provide a single date for `hazard_temporal_extent`, a single WorldPop year for
-`population_temporal_extent`, a bounding box, the selected `hazard_dataset_id`
-(for example `dry_spell_hazard`), and a new `output_dataset_id`. Example
-workflow arguments:
+`population_temporal_extent`, a bounding box and the `hazard_dataset_id` (for
+example `dry_spell_hazard`). Zarr output cannot be produced synchronously, so
+submit it as a batch job (`POST /jobs`, then `POST /jobs/{id}/results`):
 
 ```json
 {
-  "process_id": "population_exposure_by_hazard",
-  "arguments": {
-    "hazard_dataset_id": "dry_spell_hazard",
-    "hazard_temporal_extent": ["2026-01-01", "2026-01-01"],
-    "population_temporal_extent": ["2025-01-01", "2025-12-31"],
-    "spatial_extent": {
-      "west": 32.675,
-      "east": 35.916666,
-      "south": -17.133333,
-      "north": -9.366666
-    },
-    "output_dataset_id": "dry_spell_population_exposure_2026"
+  "process": {
+    "process_graph": {
+      "exposure": {
+        "process_id": "population_exposure_by_hazard_workflow",
+        "arguments": {
+          "hazard_dataset_id": "dry_spell_hazard",
+          "hazard_temporal_extent": ["2026-01-01", "2026-01-01"],
+          "population_temporal_extent": ["2025-01-01", "2025-12-31"],
+          "spatial_extent": {
+            "west": 32.675,
+            "east": 35.916666,
+            "south": -17.133333,
+            "north": -9.366666
+          },
+          "variable": "exposed_population",
+          "output_dataset_id": "dry_spell_population_exposure"
+        },
+        "result": true
+      }
+    }
   }
 }
 ```
