@@ -77,8 +77,14 @@ class LocalNetCDFForecastPlugin(BaseDatasetPlugin):
         # contains — there's no lead-time arithmetic to do, just clip the
         # file's own period list to the requested [start, end] window. The
         # framework takes care of skipping periods already in the store.
+        # The framework passes bounds at the dataset's period precision, so a
+        # monthly end arrives as "2026-12". Compare each "YYYY-MM-DD" id at the
+        # bound's own precision, or "2026-12-01" > "2026-12" drops the last month.
         start_date, end_date = start[:10], end[:10]
-        return [p for p in self._period_ids if start_date <= p <= end_date]
+        return [
+            p for p in self._period_ids
+            if p[: len(start_date)] >= start_date and p[: len(end_date)] <= end_date
+        ]
 
     def fetch_period(self, period_id: str, bbox: list[float], **params) -> xr.Dataset:
         da = self._ds[self.source_variable].sel(time=period_id)
