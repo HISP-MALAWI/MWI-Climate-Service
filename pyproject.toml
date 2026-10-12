@@ -45,6 +45,6 @@ url = "https://gisidx.github.io/gwi"
 explicit = true
 
 [tool.uv.sources]
-open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "main" }
+open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/forecast-cubes" }  # OCS PR #339 (forecast cubes); back to main once it merges
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
 dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
