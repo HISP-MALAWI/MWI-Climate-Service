@@ -25,6 +25,7 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
+from open_climate_service.shared.time import dekad_period_ids
 from open_climate_service.streaming.protocol import GridSpec
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ _RES_DEG = 1.0 / 360.0
 
 # Defaults select the GPP product; override via ingestion.params for NPP.
 _COLLECTION = "clms_gpp_global_300m_10daily_v2_cog"
-_ASSET_KEY = "gpp300_gpp"
+_ASSET_KEY = "gpp"
 _VAR = "gpp"
 _STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 # Pin the OTC (Amsterdam) backend rather than the default load-balanced host.

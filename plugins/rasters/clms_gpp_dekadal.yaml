@@ -15,7 +15,7 @@
     plugin: rasters.clms_primary_productivity.ClmsPrimaryProductivityPlugin
     params:
       collection: clms_gpp_global_300m_10daily_v2_cog
-      asset_key: gpp300_gpp
+      asset_key: gpp
       variable: gpp
   units: "gC/m²/day"
   resolution: 300m x 300m
