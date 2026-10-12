@@ -136,7 +136,11 @@ class ModisLandCoverPlugin(BaseDatasetPlugin):
                 tile_aligned = tile.reindex_like(da, method="nearest", tolerance=_RES_DEG)
                 da = da.where(da.notnull(), tile_aligned)
 
-        da = da.where(da < 255).astype("uint8")
+        # 255 is the MODIS fill value, and NaN is fill or a gap between tiles. Both become 0,
+        # which is not an LC_Type1 class (1-17) and is the background OCS gives integer
+        # rasters; the template declares it as nodata. Filled explicitly: casting NaN to
+        # uint8 is undefined behaviour that only happens to produce 0.
+        da = da.where(da < 255).fillna(0).astype("uint8")
 
         ds = da.to_dataset(name=_VAR)
         ds = ds.expand_dims(time=[np.datetime64(f"{year}-01-01")])
