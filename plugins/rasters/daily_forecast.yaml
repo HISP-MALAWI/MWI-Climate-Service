@@ -100,7 +100,7 @@
     plugin: rasters.heatstress_hazard.HeatStressHazardPlugin
     params:
       base_url: http://168.253.224.247:8000/
-      dataset: tmean
+      dataset: tmax
       hazard_variable: heatstress_hazard
       max_forecast_days: 7
   units: '1'
