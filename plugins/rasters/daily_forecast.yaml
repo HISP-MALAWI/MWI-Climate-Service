@@ -88,6 +88,32 @@
     range:
     - 5
     - 35
+- id: heatstress_hazard_forecast_daily
+  name: Heat Stress Hazard (Daily Forecast)
+  short_name: Heat Stress Hazard
+  variable: heatstress_hazard
+  period_type: daily
+  sync:
+    kind: temporal
+  temporal_direction: future
+  ingestion:
+    plugin: rasters.heatstress_hazard.HeatStressHazardPlugin
+    params:
+      base_url: http://168.253.224.247:8000/
+      dataset: tmean
+      hazard_variable: heatstress_hazard
+      max_forecast_days: 7
+  units: '1'
+  cf_attributes:
+    units: '1'
+  resolution: 0.0629° × 0.0645° (~7 km)
+  source: Department of Climate change and meteological services.
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: rdylgn_r
+    range:
+    - 0
+    - 3
 - id: precipitation_forecast_daily
   name: Precipitation (Daily Forecast)
   short_name: Precip
