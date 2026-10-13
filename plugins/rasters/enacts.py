@@ -1,7 +1,9 @@
-"""ENACTS daily precipitation plugin.
+"""ENACTS daily precip/tmin/tmax plugin.
 
-Fetches daily precipitation rasters from the DCCMS ENACTS DST API, one
-calendar day per request, clipped server-side to the requested bbox.
+Fetches daily precipitation, minimum-temperature, or maximum-temperature
+rasters from the DCCMS ENACTS DST API, one calendar day per request,
+clipped server-side to the requested bbox. Which variable is fetched is
+controlled by the `variable` constructor param.
 """
 
 from __future__ import annotations
@@ -16,16 +18,34 @@ import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.streaming import BaseDatasetPlugin
+from open_climate_service.shared.time import utc_today
+from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
 
 logger = logging.getLogger(__name__)
-
-_API_VAR = "precip"
 
 # "MON" is the fixed dataset code for this ENACTS source (not an
 # abbreviation for "monthly") -- periodicity is controlled separately via
 # the temporalRes param, which is set to "daily" below.
 _KNOWN_DAILY_DATASET_CODES = {"MON"}
+
+# Per-variable lookup: candidate data_var names to look for in the
+# returned netCDF (tried in order -- server-side naming isn't fully
+# consistent across variables, e.g. "rr" vs "precip"), and the CF units
+# string to stamp onto the output DataArray.
+#
+# NOTE: the tmin/tmax var_keys are best-guess based on the precip entry's
+# pattern (short WMO-style code + long-form fallback) -- confirm against a
+# live API response before relying on these for tmin/tmax.
+_VAR_KEY_CANDIDATES: dict[str, list[str]] = {
+    "precip": ["rr", "precip"],
+    "tmin": ["tn", "tmin"],
+    "tmax": ["tx", "tmax"],
+}
+_UNITS: dict[str, str] = {
+    "precip": "mm",
+    "tmin": "degC",
+    "tmax": "degC",
+}
 
 # Response bodies logged on error are truncated to this many characters so a
 # large HTML/error page doesn't flood the logs.
@@ -35,8 +55,13 @@ _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 _MAX_RETRIES = 3
 _BACKOFF_BASE_SECONDS = 2.0
 
-class EnactsPrecipPlugin(BaseDatasetPlugin):
-    """Streaming plugin for ENACTS daily precipitation (DCCMS DST API).
+
+class EnactsPlugin(BaseDatasetPlugin):
+    """Streaming plugin for ENACTS daily variables (DCCMS DST API).
+
+    Handles precipitation, tmin, and tmax via a single implementation --
+    which of the three is fetched is controlled by the `variable`
+    constructor param.
 
     Subclasses BaseDatasetPlugin, so `time_dim`/`x_dim`/`y_dim`/`crs`
     inherit the framework defaults ("t"/"x"/"y"/4326) rather than being
@@ -50,13 +75,21 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
     def __init__(
         self,
         base_url: str,
+        variable: str,
         dataset: str = "MON",
         temporal_resolution: str = "daily",
         api_key: str | None = None,
         **_: object,
     ) -> None:
+        if variable not in _VAR_KEY_CANDIDATES:
+            raise ValueError(
+                f"Unknown ENACTS variable '{variable}'. "
+                f"Expected one of {sorted(_VAR_KEY_CANDIDATES)}."
+            )
+
         self._base_url = base_url.rstrip("/")
         self._dataset = dataset
+        self._variable = variable
         self._temporal_resolution = temporal_resolution
 
         resolved_key = api_key or os.getenv("ENACTS_API_KEY")
@@ -75,13 +108,10 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
         }
 
     async def periods(self, start: str, end: str) -> list[str]:
-        # No cheap availability-probe endpoint is known for this API (unlike
-        # CHIRPS3/ERA5-Land's HEAD-based cutoffs), so this caps at "today" as
-        # a conservative default. fetch_period raising on a missing day
-        # aborts the whole ingest (orchestrator does not skip failed
-        # periods) -- this cap is the only guard against that, so tighten it
-        # via a real availability check if one becomes available.
-        return daily_period_ids(start, end, cutoff=utc_today())
+        start_dt = np.datetime64(start[:10], "D")
+        end_dt = np.datetime64(end[:10], "D")
+        days = np.arange(start_dt, end_dt + np.timedelta64(1, "D"), dtype="datetime64[D]")
+        return [str(d) for d in days]
 
     def _request_with_retry(self, endpoint: str, params: dict) -> requests.Response:
         last_exc: Exception | None = None
@@ -148,7 +178,7 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
         params = {
             "dataset": self._dataset,
             "temporalRes": self._temporal_resolution,
-            "variable": _API_VAR,
+            "variable": self._variable,
             "geomExtract": "rectangle",
             "minLon": xmin,
             "maxLon": xmax,
@@ -193,12 +223,19 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
             if rename_coords:
                 ds = ds.rename(rename_coords)
 
-            if "rr" in ds.data_vars:
-                var_key = "rr"
-            elif "precip" in ds.data_vars:
-                var_key = "precip"
-            else:
+            candidates = _VAR_KEY_CANDIDATES[self._variable]
+            var_key = next((key for key in candidates if key in ds.data_vars), None)
+            if var_key is None:
                 var_key = list(ds.data_vars)[0]
+                logger.warning(
+                    "None of expected data_vars %s found for variable '%s' "
+                    "in ENACTS response for %s; falling back to first "
+                    "data_var '%s'.",
+                    candidates,
+                    self._variable,
+                    period_id,
+                    var_key,
+                )
 
             if "time" in ds.dims and ds.sizes["time"] > 1:
                 # Bound the "nearest" match so a gap in the record raises
@@ -226,14 +263,14 @@ class EnactsPrecipPlugin(BaseDatasetPlugin):
 
             da = da.rename({"lon": self.x_dim, "lat": self.y_dim})
             da = da.astype("float32")
-            da.attrs["units"] = "mm"
+            da.attrs["units"] = _UNITS[self._variable]
 
             if "time" in da.coords:
                 da = da.drop_vars("time")
 
             # normalize_period wraps the DataArray into a Dataset named
-            # "precip" and stamps period_id onto self.time_dim ("t"). No
-            # bbox= is passed since the array is already clipped above (and
-            # normalize_period's bbox clip needs a CRS-aware rio accessor
-            # this array doesn't carry).
-            return normalize_period(da, variable=_API_VAR, period=period_id).load()
+            # after `variable` and stamps period_id onto self.time_dim
+            # ("t"). No bbox= is passed since the array is already clipped
+            # above (and normalize_period's bbox clip needs a CRS-aware rio
+            # accessor this array doesn't carry).
+            return normalize_period(da, variable=self._variable, period=period_id).load()

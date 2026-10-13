@@ -11,7 +11,7 @@
     temporal:
       begin: "2014-01-01"
   ingestion:
-    plugin: datasets.clms_ndvi.ClmsNdviPlugin
+    plugin: rasters.clms_ndvi.ClmsNdviPlugin
     params: {}
   units: null
   resolution: 300m x 300m

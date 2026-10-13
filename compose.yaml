@@ -1,0 +1,29 @@
+services:
+  mwi-climate-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mwi-climate-service:latest
+    container_name: mwi-climate-service
+    ports:
+      - "8002:8002"
+    environment:
+      CLIMATE_SERVICE_CONFIG: /app/climate-service.yaml
+    volumes:
+      # Persist downloaded files and Zarr/icechunk stores across restarts.
+      - ocs-data:/app/data
+      # Mount config/plugins read-only so you can iterate without rebuilding
+      # the image for every change (comment out once you're happy baking
+      # them into the image instead).
+      - ./climate-service.yaml:/app/climate-service.yaml:ro
+      - ./plugins:/app/plugins:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8002/extent"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  ocs-data:

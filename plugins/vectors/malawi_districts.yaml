@@ -1,0 +1,52 @@
+# Malawi's 28 districts from Overture Maps. Overture tags the districts and many traditional
+# authorities in Malawi as the same `county` subtype and admin level, so no subtype filter
+# separates them; the districts are selected by Overture id instead. Where a district name
+# appears twice, the id is the district-sized polygon (the other is a 2-12 km2 area).
+# The ids belong to the pinned release; check them when bumping `release`.
+#
+# LICENCE: ODbL (OpenStreetMap). Keep `license` and `attribution`.
+- id: malawi_districts
+  name: Districts of Malawi (Overture Maps)
+  description: >-
+    The 28 districts of Malawi, from Overture Maps administrative divisions.
+  license: ODbL-1.0
+  attribution: © OpenStreetMap contributors, © Overture Maps Foundation
+  providers:
+    - name: Overture Maps
+      url: https://overturemaps.org
+  id_property: id
+  provider: overture
+  params:
+    release: 2026-09-23.0
+    theme: divisions
+    filters:
+      subtype: county
+      id:
+        - 02a3ce96-fc7f-476c-b4ba-bb1e5c011d6a
+        - 0325d768-a031-4cfb-8fa9-d09dd16fe951
+        - 11a232a2-4a7e-43ef-b897-b2e6444ca176
+        - 1f0df57b-0a7a-490c-a66a-50e1d9412075
+        - 2adeb7b8-6e99-42cb-b019-c5e285e53afd
+        - 3f4b33fd-10f5-4400-9f54-73e909dd7bf7
+        - 41b2e85f-0bee-4222-8cde-c0c71adf39c3
+        - 54ffcf82-c405-4739-8dca-aad2f7ffef39
+        - 60061170-6628-4d01-8b54-963940b36194
+        - 61ce5edc-bc2d-4061-b882-b2bda2c33854
+        - 6a6cef73-6641-42dc-a6a6-880b2c482de6
+        - 6a94a216-ae3c-46d3-86a7-564f733b15a9
+        - 7dec04df-6761-4621-80a4-6bbea668658e
+        - 7f131156-a413-481f-8477-9bd12c03223d
+        - 8504b459-beb8-4db1-9b27-526b922617e1
+        - 8c7e612c-46e2-4cc0-a633-439a63115afd
+        - 900b2636-04c2-4d53-9ce2-88b92f71582f
+        - a2a00277-76f7-42f1-b418-e65d6d15ce5f
+        - ad3a97ea-d7c0-43f5-be94-b9cab7545652
+        - ae131742-2b94-4e5d-930d-0d4faf3aff42
+        - b1763741-c199-46eb-a005-9c70426c7f4d
+        - b974f01c-3ecc-44b2-9f9a-4289c0e25169
+        - bcc21738-9602-4340-a078-f98979d50ac2
+        - bfa4e5fc-ac44-4f9a-99f3-f737a04b5ba2
+        - c2427a89-4099-4830-b51b-de29fbd65aec
+        - c6967428-4473-47ac-b053-81a4e136fd18
+        - d0769d8a-4998-43d0-9bf4-e66380b0f261
+        - e891e117-1337-43ab-84a0-ceac37011dc2

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 _RES_DEG = 1.0 / 360.0
 
 _COLLECTION = "clms_gpp_global_300m_10daily_v2_cog"
-_ASSET_KEY = "gpp300_gpp"
+_ASSET_KEY = "gpp"
 _STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 _FIRST_YEAR = 2014
 _VAR = "gpp"

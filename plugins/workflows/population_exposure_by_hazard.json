@@ -1,0 +1,128 @@
+{
+  "id": "population_exposure_by_hazard_workflow",
+  "summary": "Map WorldPop population exposed to a selected hazard and retain its severity",
+  "description": "Loads one hazard snapshot and one WorldPop population year over the requested area, then calls the population_exposure_by_hazard process. Hazard categories 1-4 are exposed, 0 is unexposed, and cells outside 0-4 or without data are missing. Severity is resampled to the WorldPop grid with nearest-neighbour resampling inside that process.\n\nPublishes ONE variable per run (`variable`) as a GeoZarr dataset. The output_dataset_id must have a registered static dataset template whose `variable` matches (see population_exposure.yaml): one for exposed_population, one for hazard_severity.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). Use one date for hazard_temporal_extent and one year for population_temporal_extent.",
+  "categories": ["exposure", "hazards", "population"],
+  "parameters": [
+    {
+      "name": "hazard_dataset_id",
+      "description": "Published single-variable hazard dataset, for example dry_spell_hazard.",
+      "schema": { "type": "string", "pattern": "^\\w+$" }
+    },
+    {
+      "name": "hazard_temporal_extent",
+      "description": "A single hazard snapshot as [date, date].",
+      "schema": {
+        "type": "array",
+        "subtype": "temporal-interval",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "anyOf": [
+            { "type": "string", "format": "date-time", "subtype": "date-time" },
+            { "type": "string", "format": "date", "subtype": "date" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "population_temporal_extent",
+      "description": "The WorldPop year to use as [start-of-year, end-of-year], for example [\"2020-01-01\", \"2020-12-31\"].",
+      "schema": {
+        "type": "array",
+        "subtype": "temporal-interval",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "anyOf": [
+            { "type": "string", "format": "date-time", "subtype": "date-time" },
+            { "type": "string", "format": "date", "subtype": "date" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "spatial_extent",
+      "description": "Area to process, as a west/east/south/north bounding box in EPSG:4326 unless crs is given.",
+      "schema": {
+        "type": "object",
+        "subtype": "bounding-box",
+        "required": ["west", "south", "east", "north"],
+        "properties": {
+          "west": { "type": "number" },
+          "south": { "type": "number" },
+          "east": { "type": "number" },
+          "north": { "type": "number" },
+          "crs": {
+            "anyOf": [{ "type": "integer", "minimum": 1000 }, { "type": "string" }],
+            "default": 4326
+          }
+        }
+      }
+    },
+    {
+      "name": "population_dataset_id",
+      "description": "Population collection to use. Defaults to WorldPop global2 at 100 m.",
+      "optional": true,
+      "default": "worldpop_population_global2_100m",
+      "schema": { "type": "string" }
+    },
+    {
+      "name": "variable",
+      "description": "Which variable to publish. Must match the `variable` of the template registered for output_dataset_id.",
+      "optional": true,
+      "default": "exposed_population",
+      "schema": { "type": "string", "enum": ["exposed_population", "hazard_severity"] }
+    },
+    {
+      "name": "output_dataset_id",
+      "description": "ID of the dataset to publish. A static dataset template with this id and a matching `variable` must be registered on the instance.",
+      "schema": { "type": "string", "pattern": "^\\w+$" }
+    }
+  ],
+  "returns": {
+    "description": "The published exposure dataset.",
+    "schema": { "type": "object", "subtype": "raster-cube" }
+  },
+  "process_graph": {
+    "hazard": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": { "from_parameter": "hazard_dataset_id" },
+        "spatial_extent": { "from_parameter": "spatial_extent" },
+        "temporal_extent": { "from_parameter": "hazard_temporal_extent" }
+      }
+    },
+    "population": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": { "from_parameter": "population_dataset_id" },
+        "spatial_extent": { "from_parameter": "spatial_extent" },
+        "temporal_extent": { "from_parameter": "population_temporal_extent" },
+        "bands": ["pop_total"]
+      }
+    },
+    "exposure": {
+      "process_id": "population_exposure_by_hazard",
+      "arguments": {
+        "hazard": { "from_node": "hazard" },
+        "population": { "from_node": "population" },
+        "variable": { "from_parameter": "variable" }
+      }
+    },
+    "publish": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": { "from_node": "exposure" },
+        "format": "Zarr",
+        "options": {
+          "dataset_id": { "from_parameter": "output_dataset_id" },
+          "source_dataset_id": { "from_parameter": "population_dataset_id" },
+          "variable": { "from_parameter": "variable" },
+          "publish": true
+        }
+      },
+      "result": true
+    }
+  }
+}

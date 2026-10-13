@@ -11,7 +11,7 @@
       end: "2101-01-03"
       resolution: P1D
   ingestion:
-    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    plugin: rasters.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
       file_path: G:/Climate stuff/data/ACCESS-ESM1-5_ssp126/tavg.nc
       variable: tavg
@@ -35,7 +35,7 @@
       end: "2101-01-03"
       resolution: P1D
   ingestion:
-    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    plugin: rasters.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
       file_path: ./data/ACCESS-ESM1-5_ssp126/tmin.nc
       variable: tmin
@@ -59,7 +59,7 @@
       end: "2101-01-03"
       resolution: P1D
   ingestion:
-    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    plugin: rasters.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
       file_path: ./data/ACCESS-ESM1-5_ssp126/tmax.nc
       variable: tmax
@@ -83,7 +83,7 @@
       end: "2101-01-03"
       resolution: P1D
   ingestion:
-    plugin: datasets.access_esm_ssp126.AccessEsmSsp126Plugin
+    plugin: rasters.access_esm_ssp126.AccessEsmSsp126Plugin
     params:
       file_path: ./data/ACCESS-ESM1-5_ssp126/pre.nc
       variable: pre

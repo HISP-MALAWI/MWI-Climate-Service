@@ -26,7 +26,7 @@ override-dependencies = [
     "zarr>=3.1.6",
     "pyarrow>=19.0",
     "xarray>=2025.12.0",
-    "numpy>=2.2",
+    "numpy>=2.2,<2.5",  # numba (xclim, SPI) refuses NumPy 2.5
     "dask>=2024.1.0",
     "dask-geopandas>=0.4",
     "geopandas>=1.1",
@@ -45,6 +45,6 @@ url = "https://gisidx.github.io/gwi"
 explicit = true
 
 [tool.uv.sources]
-open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "main" }
+open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/forecast-cubes" }  # OCS PR #339 (forecast cubes); back to main once it merges
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
 dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
