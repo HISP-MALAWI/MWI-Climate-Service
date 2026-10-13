@@ -114,6 +114,7 @@
     range:
     - 0
     - 3
+
 - id: precipitation_forecast_daily
   name: Precipitation (Daily Forecast)
   short_name: Precip
