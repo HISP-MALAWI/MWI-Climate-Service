@@ -14,13 +14,10 @@ most of it anyway:
   * `lat`/`lon` are already flat 1D axes matching `shape`, not a 2D
     curvilinear mesh needing row/column averaging.
 
-Per dhis2/open-climate-service#332, this dataset's template must declare
-`temporal_direction: future` so core resolves an omitted `start` to "now"
-and an omitted `end` to a generous forward horizon -- this plugin never
-receives `None` for either, but it must clip its own output to `end`
-itself (and skip anything before `start`), since core rejects a plugin
-whose materialized periods fall outside the requested scope
-("Materialized artifact coverage does not match the requested scope").
+Stored as one run per issue date, with the lead days on `lead_time` (see
+`dccms_runs`), so each sync appends the day's run and the dataset can be
+scheduled. The API serves only the current run and gives no issue date, so
+the run is dated today.
 
 Source: Department of Climate Change and Meteorological Services (DCCMS).
 """
@@ -30,14 +27,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from datetime import date, timedelta
+from datetime import date
 from typing import Any
 
 import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
+from open_climate_service.shared import forecast
+from open_climate_service.streaming import BaseDatasetPlugin
+from rasters.dccms_runs import forecast_run
 
 logger = logging.getLogger(__name__)
 
@@ -65,19 +64,14 @@ def _is_valid_grid_payload(payload: dict[str, Any]) -> bool:
 class HazardForecastPlugin(BaseDatasetPlugin):
     """Streaming plugin for DCCMS daily gridded hazard classes (grid/hazards).
 
-    Subclasses BaseDatasetPlugin directly, so `time_dim`/`x_dim`/`y_dim`/`crs`
-    inherit the framework defaults ("t"/"x"/"y"/4326).
-
-    Ignores the dataset's period_type/resolution config -- periods are
-    lead days (0..max_forecast_days-1) from the API, not a calendar range.
-    `start`/`end` passed into periods() ARE respected: lead days whose
-    computed calendar date falls outside that window are filtered out.
-    The dataset template must set `temporal_direction: future` so core
-    resolves an omitted start to "now" rather than requiring one.
+    One period is one run: today's, with lead days 0..max_forecast_days-1
+    on `lead_time`. The template must set `temporal_direction: future`.
     """
 
     max_concurrency = 1
     commit_batch_size = 1
+    # The append axis: one run per issue date, so a sync never rewrites an earlier run.
+    time_dim = forecast.REFERENCE_DIM
 
     def __init__(
         self,
@@ -89,9 +83,9 @@ class HazardForecastPlugin(BaseDatasetPlugin):
         self._base_url = base_url.rstrip("/")
         self._variable = dataset
         self._max_forecast_days = max_forecast_days
-        # period_id (ISO date str) -> raw API payload, populated during
-        # periods() so fetch_period() doesn't have to re-hit the API.
-        self._cache: dict[str, dict[str, Any]] = {}
+        # issue date (ISO str) -> the run's payloads by lead day, filled by
+        # periods() so fetch_period() does not have to hit the API again.
+        self._runs: dict[str, dict[int, dict[str, Any]]] = {}
 
     def _request_with_retry(self, day: int) -> requests.Response | None:
         endpoint = f"{self._base_url}/grid/hazards"
@@ -131,23 +125,11 @@ class HazardForecastPlugin(BaseDatasetPlugin):
 
         return None
 
-    async def periods(self, start: str, end: str) -> list[str]:
-        # Per dhis2/open-climate-service#332, core never passes None here --
-        # an omitted start resolves to "now" and an omitted end resolves to
-        # a generous forward horizon. Both are always concrete ISO date
-        # strings. The plugin clips its own lead-day walk to `end` and
-        # skips anything before `start`; core rejects materialized coverage
-        # outside the requested window.
-        start_date = date.fromisoformat(start)
-        end_date = date.fromisoformat(end)
-        # Lead day 0 is "today" -- the API gives no date field, so the
-        # calendar date for each lead day has to be computed relative to
-        # the current issue day rather than read off the payload.
-        issue_date = date.today()
-
-        periods: list[str] = []
+    def _scan(self) -> dict[int, dict[str, Any]]:
+        """The current run's grids by lead day, stopping at the first day the API cannot serve."""
+        payloads: dict[int, dict[str, Any]] = {}
         for day in range(0, self._max_forecast_days):
-            response = await asyncio.to_thread(self._request_with_retry, day)
+            response = self._request_with_retry(day)
             if response is None or response.status_code != 200:
                 logger.info(
                     "Stopping hazard lead-day scan for %s at day=%d (%s)",
@@ -162,60 +144,43 @@ class HazardForecastPlugin(BaseDatasetPlugin):
                     day, self._variable,
                 )
                 continue
+            payloads[day] = payload
+        return payloads
 
-            period_date = issue_date + timedelta(days=day)
-            if period_date > end_date:
-                # Stop rather than skip: lead days are strictly increasing,
-                # so nothing further in the walk can be <= end either.
-                logger.info(
-                    "Stopping hazard lead-day scan for %s at day=%d: "
-                    "%s exceeds requested end=%s",
-                    self._variable, day, period_date.isoformat(), end,
-                )
-                break
-            if period_date < start_date:
-                logger.debug(
-                    "Skipping %s day=%d: %s is before requested start=%s",
-                    self._variable, day, period_date.isoformat(), start,
-                )
-                continue
-
-            period_id = period_date.isoformat()
-            self._cache[period_id] = payload
-            periods.append(period_id)
-        return periods
+    async def periods(self, start: str, end: str) -> list[str]:
+        """Today's run, when it falls in [start, end] and the API serves it."""
+        issue = date.today()
+        if not date.fromisoformat(start[:10]) <= issue <= date.fromisoformat(end[:10]):
+            return []
+        payloads = await asyncio.to_thread(self._scan)
+        if not payloads:
+            return []
+        self._runs[issue.isoformat()] = payloads
+        return [issue.isoformat()]
 
     def fetch_period(self, period_id: str, bbox: list[float], **_: Any) -> xr.Dataset:
-        """Build a one-step dataset for the given hazard date.
+        """The run issued on `period_id`, as `(reference_time=1, lead_time, y, x)`.
 
-        A regular (blocking) method -- the framework runs it in a worker
-        thread, matching DailyForecastPlugin.fetch_period. Raises if the
-        day isn't available, which aborts the ingest rather than silently
-        skipping (same convention as DailyForecastPlugin).
+        Only today's run is available upstream; any other date raises, which
+        aborts the ingest rather than storing a different run under its date.
         """
+        payloads = self._runs.get(period_id[:10])
+        if payloads is None:
+            if period_id[:10] != date.today().isoformat():
+                raise RuntimeError(
+                    f"Only today's hazard run is available for variable={self._variable}, not {period_id}"
+                )
+            payloads = self._scan()
+        if not payloads:
+            raise RuntimeError(f"No hazard data available for variable={self._variable} on {period_id}")
+
+        leads = sorted(payloads)
+        grids = [self._grid(payloads[day], bbox) for day in leads]
+        return forecast_run(grids, leads, date.fromisoformat(period_id[:10]), variable=self._variable).load()
+
+    def _grid(self, payload: dict[str, Any], bbox: list[float]) -> xr.DataArray:
+        """One lead day's grid, clipped to `bbox`, as `(y, x)`."""
         xmin, ymin, xmax, ymax = map(float, bbox)
-
-        payload = self._cache.get(period_id, None)
-        if payload is None:
-            # Standalone call without a prior periods() pass -- look the
-            # date up by recomputing each lead day's calendar date the
-            # same way periods() does, and stopping at the one that matches.
-            issue_date = date.today()
-            for day in range(0, self._max_forecast_days):
-                if (issue_date + timedelta(days=day)).isoformat() != period_id:
-                    continue
-                response = self._request_with_retry(day)
-                if response is not None and response.status_code == 200:
-                    candidate = response.json()
-                    if _is_valid_grid_payload(candidate):
-                        payload = candidate
-                break
-
-        if payload is None:
-            raise RuntimeError(
-                f"No hazard data available for variable={self._variable} on {period_id}"
-            )
-
         # Unlike DailyForecastPlugin's payload, lat/lon here are already
         # flat 1D axes matching `shape` -- no curvilinear row/column
         # averaging needed.
@@ -241,5 +206,4 @@ class HazardForecastPlugin(BaseDatasetPlugin):
         da = da.astype("float32")
         if units := payload.get("units"):
             da.attrs["units"] = units
-
-        return normalize_period(da, variable=self._variable, period=period_id).load()
+        return da
