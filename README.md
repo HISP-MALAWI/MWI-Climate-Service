@@ -47,24 +47,32 @@ The API starts at http://localhost:8002. Visit `/manage` to ingest datasets.
 ## Population exposed to a hazard
 
 The `population_exposure_by_hazard` workflow overlays a published hazard
-snapshot with the built-in WorldPop Global2 100 m total-population dataset.
+forecast with the built-in WorldPop Global2 100 m total-population dataset.
 Hazard categories 1-4 are treated as exposed (4 is the most severe); category
 0 is unexposed. Severity is resampled to the WorldPop grid using
-nearest-neighbour resampling. Each run publishes one variable as a managed
-Zarr dataset, chosen with `variable`:
+nearest-neighbour resampling. The default heat-stress output is a four-
+dimensional managed Zarr cube with `time`, `exposure_level`, `y`, and `x`
+dimensions:
 
 | `variable` | `output_dataset_id` | Contents |
 | --- | --- | --- |
-| `exposed_population` (default) | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
+| `heatstress_exposure` (default) | `heatstress_population_exposure_forecast_daily` | Population per cell at each heat-stress exposure level (categories 1-3) |
+| `exposed_population` | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
 | `hazard_severity` | `dry_spell_hazard_severity_100m` | Hazard category 0-4 on the WorldPop grid |
 
 `output_dataset_id` must name a template in `plugins/rasters/pop_exposure.yaml`
 whose `variable` matches, so run the workflow once per variable.
+The heat-stress cube's `exposure_level` dimension makes it possible to select
+population exposure for a specific category. Each level contains the
+population in cells with exactly that hazard category; unexposed cells contain
+zero. It does not include a separate hazard-level band.
 
-Provide a single date for `hazard_temporal_extent`, a single WorldPop year for
-`population_temporal_extent`, a bounding box and the `hazard_dataset_id` (for
-example `dry_spell_hazard`). Zarr output cannot be produced synchronously, so
-submit it as a batch job (`POST /jobs`, then `POST /jobs/{id}/results`):
+`hazard_temporal_extent` can span multiple forecast dates; use one WorldPop
+year for `population_temporal_extent`, a bounding box, and
+`heatstress_hazard_forecast_daily` as the `hazard_dataset_id` (the default).
+For other hazards, select the matching output template and `variable`.
+Zarr output cannot be produced synchronously, so submit it as a batch job
+(`POST /jobs`, then `POST /jobs/{id}/results`):
 
 ```json
 {
