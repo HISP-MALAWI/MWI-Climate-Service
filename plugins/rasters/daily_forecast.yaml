@@ -177,6 +177,7 @@
     range:
     - 0
     - 100
+    
 - id: rh_max_forecast_daily
   name: Maximum Relative Humidity (Daily Forecast)
   short_name: RH Max
