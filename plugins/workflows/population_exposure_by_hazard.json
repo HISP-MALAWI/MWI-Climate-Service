@@ -1,17 +1,19 @@
 {
   "id": "population_exposure_by_hazard_workflow",
-  "summary": "Map WorldPop population exposed to a selected hazard and retain its severity",
-  "description": "Loads one hazard snapshot and one WorldPop population year over the requested area, then calls the population_exposure_by_hazard process. Hazard categories 1-4 are exposed, 0 is unexposed, and cells outside 0-4 or without data are missing. Severity is resampled to the WorldPop grid with nearest-neighbour resampling inside that process.\n\nPublishes ONE variable per run (`variable`) as a GeoZarr dataset. The output_dataset_id must have a registered static dataset template whose `variable` matches (see population_exposure.yaml): one for exposed_population, one for hazard_severity.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). Use one date for hazard_temporal_extent and one year for population_temporal_extent.",
+  "summary": "Map forecast hazard exposure and WorldPop population",
+  "description": "Loads a hazard forecast and one WorldPop population year over the requested area, then overlays hazard severity on the population grid using nearest-neighbour resampling. Hazard categories 1-4 are exposed, 0 is unexposed, and cells outside 0-4 or without data are missing.\n\nUse `variable: heatstress_exposure` to publish one four-dimensional GeoZarr variable with `time`, `exposure_level`, `y`, and `x` dimensions. Its exposure_level coordinate contains categories 1-3, and each slice contains the population in cells at exactly that category; unexposed cells contain zero and missing cells remain missing. No hazard-severity band is included in this population output. Existing `exposed_population` and `hazard_severity` modes remain available for publishing one variable per run.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). The hazard temporal extent can include multiple forecast dates; population_temporal_extent selects one WorldPop year.",
   "categories": ["exposure", "hazards", "population"],
   "parameters": [
     {
       "name": "hazard_dataset_id",
-      "description": "Published single-variable hazard dataset, for example dry_spell_hazard.",
+      "description": "Published hazard dataset, for example heatstress_hazard_forecast_daily.",
+      "optional": true,
+      "default": "heatstress_hazard_forecast_daily",
       "schema": { "type": "string", "pattern": "^\\w+$" }
     },
     {
       "name": "hazard_temporal_extent",
-      "description": "A single hazard snapshot as [date, date].",
+      "description": "Forecast interval as [first date, last date], up to the available forecast period.",
       "schema": {
         "type": "array",
         "subtype": "temporal-interval",
@@ -71,12 +73,17 @@
       "name": "variable",
       "description": "Which variable to publish. Must match the `variable` of the template registered for output_dataset_id.",
       "optional": true,
-      "default": "exposed_population",
-      "schema": { "type": "string", "enum": ["exposed_population", "hazard_severity"] }
+      "default": "heatstress_exposure",
+      "schema": {
+        "type": "string",
+        "enum": ["heatstress_exposure", "exposed_population", "hazard_severity"]
+      }
     },
     {
       "name": "output_dataset_id",
-      "description": "ID of the dataset to publish. A static dataset template with this id and a matching `variable` must be registered on the instance.",
+      "description": "ID of the registered static dataset template to publish. Defaults to the heat-stress exposure cube.",
+      "optional": true,
+      "default": "heatstress_population_exposure_forecast_daily",
       "schema": { "type": "string", "pattern": "^\\w+$" }
     }
   ],
