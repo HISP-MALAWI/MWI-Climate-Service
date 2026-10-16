@@ -5,6 +5,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -35,6 +36,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -64,6 +66,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -99,6 +102,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   ingestion:
     plugin: rasters.heatstress_hazard.HeatStressHazardPlugin
@@ -130,6 +134,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -161,6 +166,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -193,6 +199,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -224,6 +231,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -255,6 +263,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -286,6 +295,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -317,6 +327,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -348,6 +359,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -379,6 +391,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -410,6 +423,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -441,6 +455,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -464,7 +479,6 @@
     colormap: Viridis
     range:
     - 0
-    - 2000
 - id: frost_risk_forecast_daily
   name: Frost Risk (Daily Forecast)
   short_name: Frost Risk
@@ -472,6 +486,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -501,6 +516,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -532,6 +548,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -563,6 +580,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -594,6 +612,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
@@ -625,6 +644,7 @@
   period_type: daily
   sync:
     kind: temporal
+    execution: append
   temporal_direction: future
   extents:
     temporal:
