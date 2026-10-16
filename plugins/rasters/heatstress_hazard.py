@@ -41,7 +41,7 @@ class HeatStressHazardPlugin(DailyForecastPlugin):
             units="1",
             long_name="Heat-stress hazard level from daily mean temperature",
             flag_values=[0, 1, 2, 3],
-            flag_meanings="no_heat_stress level_1 level_2 level_3",
+            flag_meanings="no_hazard level_1 level_2 level_3",
         )
         return normalize_period(
             hazard, variable=self._hazard_variable, period=period_id
