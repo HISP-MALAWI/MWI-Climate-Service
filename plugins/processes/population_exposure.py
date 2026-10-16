@@ -1,4 +1,12 @@
-"""Processes for estimating population exposed to gridded hazards."""
+"""Processes for estimating population exposed to gridded categorical hazards.
+
+Works for any classified hazard raster (heat stress, flood depth, drought
+class, cyclone wind band, ...). The class codes and labels come, in order of
+priority, from: the ``hazard_categories`` / ``no_hazard_value`` parameters,
+the classes declared on the hazard cube (CF ``flag_values`` / ``flag_meanings``,
+stamped from the dataset template by ``load_collection``), and finally the
+legacy default of codes 1-4.
+"""
 from __future__ import annotations
 
 import numpy as np
@@ -15,10 +23,20 @@ BAND_DIMS = ("band", "bands")
 SPATIAL_DIMS = ("y", "x")
 SPATIAL_DIM_SET = set(SPATIAL_DIMS)
 SPATIAL_ALIASES = {"latitude": "y", "lat": "y", "longitude": "x", "lon": "x"}
-VALID_SEVERITIES = (0, 1, 2, 3, 4)
-OUTPUT_VARIABLES = ("exposed_population", "hazard_severity")
-HEATSTRESS_EXPOSURE_VARIABLE = "heatstress_exposure"
-HEATSTRESS_EXPOSURE_LEVELS = (1, 2, 3)
+
+# Fallback only: used when neither the caller nor the dataset declares classes.
+DEFAULT_HAZARD_CATEGORIES = (1, 2, 3, 4)
+NO_HAZARD_VALUE = 0
+
+CLASS_VALUES_ATTR = "flag_values"
+CLASS_MEANINGS_ATTR = "flag_meanings"
+
+OUTPUT_VARIABLES = (
+    "exposed_population",
+    "hazard_severity",
+    "population_by_hazard_category",
+)
+POPULATION_BY_HAZARD_CATEGORY_VARIABLE = "population_by_hazard_category"
 POPULATION_METHODS = ("step", "linear")
 
 
@@ -74,8 +92,8 @@ def _as_float_with_nan(da: xr.DataArray) -> xr.DataArray:
     return da.astype("float32").rio.write_nodata(np.nan)
 
 
-def _parse_categories(category) -> tuple[int, ...] | None:
-    """None/'all' -> None; 2, '2', '1,3' or [1, 3] -> sorted tuple."""
+def _parse_categories(category, valid_categories) -> tuple[int, ...] | None:
+    """None/'all' -> None; otherwise parse and validate selected categories."""
     if category is None:
         return None
     try:
@@ -90,16 +108,80 @@ def _parse_categories(category) -> tuple[int, ...] | None:
             values = [int(v) for v in category]
     except (TypeError, ValueError) as exc:
         raise ValueError(
-            f"category must be 'all' or values from {HEATSTRESS_EXPOSURE_LEVELS}; "
+            f"category must be 'all' or values from {valid_categories}; "
             f"got {category!r}"
         ) from exc
-    bad = [v for v in values if v not in HEATSTRESS_EXPOSURE_LEVELS]
+    bad = [v for v in values if v not in valid_categories]
     if bad or not values:
         raise ValueError(
-            f"category must be 'all' or values from {HEATSTRESS_EXPOSURE_LEVELS}; "
+            f"category must be 'all' or values from {valid_categories}; "
             f"got {category!r}"
         )
     return tuple(sorted(set(values)))
+
+
+def _parse_hazard_categories(
+    categories, no_hazard_value: int | None
+) -> tuple[int, ...]:
+    """Parse the configured integer codes that represent exposed hazard classes."""
+    try:
+        if isinstance(categories, str):
+            values = [
+                int(part)
+                for part in categories.replace(";", ",").split(",")
+                if part.strip()
+            ]
+        else:
+            values = [int(value) for value in categories]
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "hazard_categories must be a non-empty list of integer category codes"
+        ) from exc
+
+    parsed = tuple(sorted(set(values)))
+    if not parsed or (no_hazard_value is not None and no_hazard_value in parsed):
+        raise ValueError(
+            "hazard_categories must be non-empty and must not include "
+            f"no_hazard_value ({no_hazard_value})"
+        )
+    return parsed
+
+
+# ------------------------------------------------------- declared classes
+def _declared_classes(hazard: xr.DataArray) -> dict[int, str]:
+    """Return {code: label} from CF flag attributes on the hazard, or {}.
+
+    ``flag_meanings`` is a space-separated string in CF, so underscores stand
+    in for spaces in a label; they are turned back into spaces here.
+    """
+    values = hazard.attrs.get(CLASS_VALUES_ATTR)
+    if values is None:
+        return {}
+    codes = [int(v) for v in np.atleast_1d(values)]
+    meanings = hazard.attrs.get(CLASS_MEANINGS_ATTR)
+    if isinstance(meanings, str):
+        labels = meanings.split()
+    elif meanings is not None:
+        labels = [str(m) for m in meanings]
+    else:
+        labels = []
+    if len(labels) != len(codes):
+        labels = [str(c) for c in codes]
+    return {c: l.replace("_", " ") for c, l in zip(codes, labels)}
+
+
+def _resolve_hazard_categories(
+    categories, declared: dict[int, str], no_hazard_value: int | None
+) -> tuple[int, ...]:
+    """Explicit parameter > classes declared on the data > legacy default."""
+    if categories is not None:
+        return _parse_hazard_categories(categories, no_hazard_value)
+    exposed = tuple(sorted(c for c in declared if c != no_hazard_value))
+    return exposed or DEFAULT_HAZARD_CATEGORIES
+
+
+def _flag_meanings(codes, declared: dict[int, str]) -> str:
+    return " ".join(declared.get(c, str(c)).replace(" ", "_") for c in codes)
 
 
 # ------------------------------------------------------------- hazard days
@@ -123,11 +205,11 @@ def _select_indices(times: np.ndarray, date) -> list[int]:
 
 
 def _hazard_steps(hazard, date, start_date) -> list[tuple[object, xr.DataArray]]:
-    """Split the hazard into (day, 2-D raster) pairs, one per forecast day."""
+    """Split the hazard into (day, 2-D raster) pairs, one per time step."""
     hazard = _promote_scalar_time(hazard)
     time_dim = _find_time_dim(hazard)
 
-    # Multi-band hazard (one band per forecast day): bands become the days.
+    # Multi-band hazard (one band per day): bands become the days.
     if time_dim is None:
         band_dim = next(
             (b for b in BAND_DIMS if b in hazard.dims and hazard.sizes[b] > 1), None
@@ -164,10 +246,11 @@ def _hazard_steps(hazard, date, start_date) -> list[tuple[object, xr.DataArray]]
     ]
 
 
-def _severity_on_population_grid(hazard_2d, grid) -> xr.DataArray:
-    # Mask before reprojection so padding is NaN, never "0 = no hazard".
+def _severity_on_population_grid(hazard_2d, grid, valid_values) -> xr.DataArray:
+    # Mask before reprojection so padding and any nodata code (for example 255)
+    # stay NaN instead of being read as a hazard class.
     hazard_2d = _as_float_with_nan(hazard_2d)
-    hazard_2d = hazard_2d.where(hazard_2d.isin(VALID_SEVERITIES))
+    hazard_2d = hazard_2d.where(hazard_2d.isin(valid_values))
     severity = hazard_2d.rio.reproject_match(
         grid, resampling=Resampling.nearest, nodata=np.nan
     )
@@ -258,41 +341,59 @@ def _stack(items: list[xr.DataArray]) -> xr.DataArray:
 
 # ----------------------------------------------------------------- process
 @process(
-    summary="Daily population exposed to heat-stress categories (WorldPop x hazard)",
+    summary="Population exposed to a categorical hazard (any hazard x population)",
     parameters={
         "hazard": {
             "description": (
-                "Daily hazard forecast with categories 0-4 (0 = no hazard; "
-                "other values are treated as missing). Days may be a time / "
-                "valid_time / date / day / t dimension, a scalar time "
-                "coordinate, or bands (one per day)."
+                "Categorical hazard raster for any hazard type (heat stress, "
+                "flood, drought, ...). Class codes and labels are read from "
+                "the classes declared on the dataset (CF flag_values / "
+                "flag_meanings) unless hazard_categories and no_hazard_value "
+                "are given. Other values, including the nodata code, are "
+                "treated as missing. Steps may be a time / valid_time / date "
+                "/ day / t dimension, a scalar time coordinate, or bands "
+                "(one per step)."
             )
         },
         "population": {
             "description": (
                 "Yearly WorldPop counts per cell: one raster, or a stack with "
-                "a time (year) dimension. Resampled to each hazard day."
+                "a time (year) dimension. Resampled to each hazard step."
             )
         },
         "variable": {
             "description": (
-                "'heatstress_exposure' (default): exposed population by "
-                "category, one band per day (and per category if several are "
-                "kept). 'exposed_population': one total over the selected "
-                "categories. 'hazard_severity': the daily category grid. "
+                "'population_by_hazard_category' (default): population in "
+                "each exposed class. 'exposed_population': total over the "
+                "selected classes. 'hazard_severity': the class grid. "
                 "'all': exposed_population and hazard_severity."
             )
         },
         "category": {
             "description": (
-                "Filter by heat-stress category: 1, 2 or 3, several as '1,3', "
-                "or 'all' (default). A single category gives one band per day."
+                "Optional class filter, chosen from the exposed classes. "
+                "Accepts one code, comma-separated codes, or 'all' (default). "
+                "A single class gives one band per step."
+            )
+        },
+        "hazard_categories": {
+            "description": (
+                "Integer codes that count as exposed. Defaults to the "
+                "declared classes of the hazard dataset except "
+                "no_hazard_value, or 1, 2, 3, 4 if none are declared."
+            )
+        },
+        "no_hazard_value": {
+            "description": (
+                "Integer code meaning no hazard (default: 0). It is a valid "
+                "value but never counts as exposed. Use null if the hazard "
+                "has no such class."
             )
         },
         "date": {
             "description": (
                 "Optional day (YYYY-MM-DD); only hazard steps on that day are "
-                "used. Omit to process every forecast day."
+                "used. Omit to process every step."
             )
         },
         "population_resampling": {
@@ -313,31 +414,33 @@ def _stack(items: list[xr.DataArray]) -> xr.DataArray:
 def population_exposure_by_hazard(
     hazard: xr.DataArray,
     population: xr.DataArray,
-    variable: str = HEATSTRESS_EXPOSURE_VARIABLE,
+    variable: str = POPULATION_BY_HAZARD_CATEGORY_VARIABLE,
     category: str | int | None = None,
     date: str | None = None,
     population_resampling: str = "step",
     hazard_start_date: str | None = None,
+    hazard_categories: tuple[int, ...] | list[int] | str | None = None,
+    no_hazard_value: int | None = NO_HAZARD_VALUE,
 ) -> xr.Dataset:
-    """Daily exposed population on the WorldPop grid, split by category.
+    """Exposed population on the WorldPop grid, split by hazard class.
 
-    For every hazard day the hazard is reprojected (nearest neighbour) onto the
-    population grid and combined with that day's population, taken from the
-    yearly WorldPop rasters (see ``population_resampling``). Output time always
-    follows the hazard days; the population's own year never labels it.
+    For every hazard step the hazard is reprojected (nearest neighbour) onto
+    the population grid and combined with that step's population, taken from
+    the yearly WorldPop rasters (see ``population_resampling``). Output time
+    always follows the hazard steps; the population's own year never labels it.
 
-    ``heatstress_exposure`` bins are exclusive (severity == category) for
-    categories 1-3 and have dims (time, exposure_level, y, x); selecting a
-    single category drops ``exposure_level`` leaving (time, y, x), i.e. one
-    band per day. ``exposed_population`` counts cells whose severity is in the
-    selected categories (severity 1-4 when no category is given). Hazard values
-    outside 0-4, cells outside the hazard extent, and missing or negative
-    population are NaN. Sum in float64 for totals.
+    ``population_by_hazard_category`` bins population by each exposed class and
+    has dims (time, exposure_level, y, x), dropping ``exposure_level`` when one
+    class is selected. The ``exposure_level`` coordinate carries
+    ``flag_values`` / ``flag_meanings`` and an ``exposure_level_label``
+    coordinate with the class labels. ``exposed_population`` sums the selected
+    classes (all exposed classes by default). Hazard values that are neither an
+    exposed class nor ``no_hazard_value``, cells outside the hazard extent, and
+    missing or negative population are NaN. Sum in float64 for totals.
     """
-    if variable not in ("all", *OUTPUT_VARIABLES, HEATSTRESS_EXPOSURE_VARIABLE):
+    if variable not in ("all", *OUTPUT_VARIABLES):
         raise ValueError(
-            "variable must be 'all', one of "
-            f"{OUTPUT_VARIABLES}, or {HEATSTRESS_EXPOSURE_VARIABLE!r}; "
+            f"variable must be 'all' or one of {OUTPUT_VARIABLES}; "
             f"got {variable!r}"
         )
     if population_resampling not in POPULATION_METHODS:
@@ -345,21 +448,32 @@ def population_exposure_by_hazard(
             f"population_resampling must be one of {POPULATION_METHODS}; "
             f"got {population_resampling!r}"
         )
-    categories = _parse_categories(category)
-    levels = categories or HEATSTRESS_EXPOSURE_LEVELS
+
+    declared = _declared_classes(hazard)  # read before the cube is split by step
+    hazard_levels = _resolve_hazard_categories(
+        hazard_categories, declared, no_hazard_value
+    )
+    categories = _parse_categories(category, hazard_levels)
+
+    levels = categories or hazard_levels
 
     steps = _hazard_steps(hazard, date, hazard_start_date)
     rasters = _load_population(population)
     grid = next(iter(rasters.values()))
     target_crs = grid.rio.crs
+    valid_hazard_values = tuple(
+        v for v in (no_hazard_value, *hazard_levels) if v is not None
+    )
 
-    want_levels = variable == HEATSTRESS_EXPOSURE_VARIABLE
+    want_levels = variable == POPULATION_BY_HAZARD_CATEGORY_VARIABLE
     want_exposed = variable in ("all", "exposed_population")
     want_severity = variable in ("all", "hazard_severity")
 
     sev_steps, exp_steps, lvl_steps = [], [], []
     for day, hazard_2d in steps:
-        severity = _severity_on_population_grid(hazard_2d, grid)
+        severity = _severity_on_population_grid(
+            hazard_2d, grid, valid_hazard_values
+        )
         pop_day = _population_for_day(rasters, day, population_resampling)
         valid = severity.notnull() & pop_day.notnull()
 
@@ -367,7 +481,7 @@ def population_exposure_by_hazard(
         if want_severity:
             outputs["sev"] = severity
         if want_exposed:
-            mask = severity.isin(categories) if categories else severity >= 1
+            mask = severity.isin(categories or hazard_levels)
             outputs["exp"] = xr.where(mask, pop_day, 0.0).where(valid)
         if want_levels:
             outputs["lvl"] = xr.concat(
@@ -380,42 +494,52 @@ def population_exposure_by_hazard(
                 arr = arr.expand_dims(time=[day])
             {"sev": sev_steps, "exp": exp_steps, "lvl": lvl_steps}[key].append(arr)
 
+    hazard_name = hazard.attrs.get("long_name") or hazard.name or "hazard"
+
     data = {}
     if want_levels:
         cube = _stack(lvl_steps)
         cube = cube.transpose(
             *[d for d in ("time", "exposure_level", "y", "x") if d in cube.dims]
         )
-        if len(levels) == 1:  # one category -> one band per day
+        cube = cube.assign_coords(
+            exposure_level_label=(
+                "exposure_level",
+                [declared.get(lv, str(lv)) for lv in levels],
+            )
+        )
+        if len(levels) == 1:  # one class -> one band per step
             cube = cube.isel(exposure_level=0)
-        cube = cube.rename(HEATSTRESS_EXPOSURE_VARIABLE)
+        cube = cube.rename(POPULATION_BY_HAZARD_CATEGORY_VARIABLE)
         cube.attrs = {
-            "long_name": "Population exposed at each heat-stress category",
+            "long_name": f"Population exposed at each {hazard_name} class",
             "units": "people",
         }
         cube.coords["exposure_level"].attrs = {
-            "long_name": "Heat-stress exposure category",
+            "long_name": f"{hazard_name} exposure class",
             "units": "1",
             "flag_values": list(levels),
+            "flag_meanings": _flag_meanings(levels, declared),
         }
         cube.encoding = {}
-        data[HEATSTRESS_EXPOSURE_VARIABLE] = cube
+        data[POPULATION_BY_HAZARD_CATEGORY_VARIABLE] = cube
     if want_exposed:
         exposed = _stack(exp_steps).rename("exposed_population")
         exposed.attrs = {
-            "long_name": "Population exposed to the hazard"
-            + (f" (categories {list(categories)})" if categories else ""),
+            "long_name": f"Population exposed to {hazard_name}"
+            + (f" (classes {list(categories)})" if categories else ""),
             "units": "people",
         }
         exposed.encoding = {}
         data["exposed_population"] = exposed
     if want_severity:
         sev = _stack(sev_steps).rename("hazard_severity")
+        codes = sorted(valid_hazard_values)
         sev.attrs = {
-            "long_name": "Hazard severity category",
+            "long_name": f"{hazard_name} severity class",
             "units": "1",
-            "flag_values": list(VALID_SEVERITIES),
-            "flag_meanings": "none category_1 category_2 category_3 category_4",
+            "flag_values": codes,
+            "flag_meanings": _flag_meanings(codes, declared),
         }
         sev.encoding = {}
         data["hazard_severity"] = sev
