@@ -2,13 +2,15 @@
 
 Fetches daily variable forecasts (tmin, tmax, etc.) from the DCCMS gridded
 forecast service. The upstream API is keyed by forecast *lead day*
-(day=1, 2, 3, ...), and each response carries the `date` it predicts.
+(day=0, 1, 2, ...): day 0 is the day the forecast was issued, day 1 the day
+after. Each response carries the `date` it predicts.
 
 Stored as one run per issue date, with the lead days on `lead_time` (see
 `dccms_runs`), so each sync appends the new run and the dataset can be
-scheduled. The issue date is the day before lead day 1's `date`. A sync
-before DCCMS publishes the day's forecast therefore finds the run already
-stored and writes nothing, rather than storing yesterday's run as today's.
+scheduled. The issue date is a lead day's `date` minus its day number. A
+sync before DCCMS publishes the day's forecast therefore finds the run
+already stored and writes nothing, rather than storing yesterday's run as
+today's.
 
 Grid is a near-regular ~7km (0.0629 lat x 0.0645 lon degree) curvilinear
 mesh returned as parallel 2D lat/lon/values arrays. The row-to-row and
@@ -49,7 +51,7 @@ class DailyForecastPlugin(BaseDatasetPlugin):
     """Streaming plugin for DCCMS daily gridded forecasts (grid/forecast).
 
     One period is one run, identified by its issue date, with lead days
-    1..max_forecast_days on `lead_time`. The template must set
+    0..max_forecast_days on `lead_time`. The template must set
     `temporal_direction: future`.
     """
 
@@ -113,13 +115,18 @@ class DailyForecastPlugin(BaseDatasetPlugin):
     def _scan(self) -> tuple[date, dict[int, dict[str, Any]]] | None:
         """The current run: its issue date and its grids by lead day, or None if the API serves none.
 
-        The issue date is the day before lead day 1's `date`; each lead is
-        counted from it, so the stored valid dates are the API's own.
+        Day 0 is the issue day, so the issue date is any lead day's `date`
+        minus its day number; the leads are the API's own day numbers.
         """
-        by_date: dict[date, dict[str, Any]] = {}
-        for day in range(1, self._max_forecast_days + 1):
+        payloads: dict[int, dict[str, Any]] = {}
+        issue: date | None = None
+        for day in range(0, self._max_forecast_days + 1):
             response = self._request_with_retry(day)
             if response is None or response.status_code != 200:
+                if day == 0:
+                    # Not every variable may serve the issue day; its later days still count.
+                    logger.info("No day=0 grid for %s; scanning from day=1", self._variable)
+                    continue
                 logger.info(
                     "Stopping forecast lead-day scan for %s at day=%d (%s)",
                     self._variable, day,
@@ -131,11 +138,18 @@ class DailyForecastPlugin(BaseDatasetPlugin):
             if not predicted:
                 logger.warning("day=%d response missing 'date'; skipping", day)
                 continue
-            by_date[date.fromisoformat(predicted)] = payload
-        if not by_date:
+            issued = date.fromisoformat(predicted) - timedelta(days=day)
+            if issue is None:
+                issue = issued
+            elif issued != issue:
+                raise RuntimeError(
+                    f"Forecast days for {self._variable} disagree on the issue date: day={day} "
+                    f"is {predicted}, which implies {issued}, not {issue}"
+                )
+            payloads[day] = payload
+        if issue is None:
             return None
-        issue = min(by_date) - timedelta(days=1)
-        return issue, {(when - issue).days: payload for when, payload in by_date.items()}
+        return issue, payloads
 
     async def periods(self, start: str, end: str) -> list[str]:
         """The current run's issue date, when it falls in [start, end]."""
