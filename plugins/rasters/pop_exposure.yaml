@@ -75,8 +75,11 @@
   sync:
     kind: static
   produced_by: population_exposure_by_hazard_workflow
-  units: mixed
+  units: people
   resolution: 100m x 100m
   source: WorldPop Global2 and heatstress_hazard_forecast_daily
   source_url: https://hub.worldpop.org/project/categories?id=3
   license: CC-BY-4.0
+  display:
+    colormap: reds
+    range: [1, 100.0]
