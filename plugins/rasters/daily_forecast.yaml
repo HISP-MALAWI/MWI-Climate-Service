@@ -88,9 +88,13 @@
     range:
     - 5
     - 35
+
 - id: heatstress_hazard_forecast_daily
   name: Heat Stress Hazard (Daily Forecast)
   short_name: Heat Stress Hazard
+  description: >-
+    Daily heat-stress hazard severity classes: 0 = no hazard (green),
+    1 = level 1 (yellow-green), 2 = level 2 (orange), and 3 = level 3 (red).
   variable: heatstress_hazard
   period_type: daily
   sync:
@@ -104,17 +108,21 @@
       hazard_variable: heatstress_hazard
       max_forecast_days: 7
   units: '1'
+  classes:
+    - { value: 0, label: No hazard, color: "#1a9850" }
+    - { value: 1, label: Level 1,   color: "#a6d96a" }
+    - { value: 2, label: Level 2,   color: "#fdae61" }
+    - { value: 3, label: Level 3,   color: "#d73027" }
   cf_attributes:
     units: '1'
   resolution: 0.0629° × 0.0645° (~7 km)
-  source: Department of Climate change and meteological services.
+  source: Department of Climate Change and Meteorological Services.
   source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: rdylgn_r
-    range:
-    - 0
-    - 3
-
+    range: [0, 3]
+    nodata: 255
+    
 - id: precipitation_forecast_daily
   name: Precipitation (Daily Forecast)
   short_name: Precip
