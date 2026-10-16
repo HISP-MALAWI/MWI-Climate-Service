@@ -1,7 +1,7 @@
 {
   "id": "population_exposure_by_hazard_workflow",
   "summary": "Map forecast hazard exposure and WorldPop population",
-  "description": "Loads a hazard forecast and one WorldPop population year over the requested area, then overlays hazard severity on the population grid using nearest-neighbour resampling. Hazard categories 1-4 are exposed, 0 is unexposed, and cells outside 0-4 or without data are missing.\n\nUse `variable: heatstress_exposure` to publish one four-dimensional GeoZarr variable with `time`, `exposure_level`, `y`, and `x` dimensions. Its exposure_level coordinate contains categories 1-3, and each slice contains the population in cells at exactly that category; unexposed cells contain zero and missing cells remain missing. No hazard-severity band is included in this population output. Existing `exposed_population` and `hazard_severity` modes remain available for publishing one variable per run.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). The hazard temporal extent can include multiple forecast dates; population_temporal_extent selects one WorldPop year.",
+  "description": "Loads a categorical hazard forecast and one WorldPop population year over the requested area, then overlays hazard categories on the population grid using nearest-neighbour resampling. Configure the exposed hazard codes with hazard_categories and the unexposed code with no_hazard_value; other values are treated as missing.\n\nUse `variable: population_by_hazard_category` to publish a four-dimensional GeoZarr variable with `time`, `exposure_level`, `y`, and `x` dimensions. Each category slice contains the population in cells at exactly that hazard code; unexposed cells contain zero and missing cells remain missing. The legacy `heatstress_exposure` output remains the default for backwards compatibility. `exposed_population` and `hazard_severity` modes are also available; publish one variable per run.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). The hazard temporal extent can include multiple forecast dates; population_temporal_extent selects one WorldPop year.",
   "categories": ["exposure", "hazards", "population"],
   "parameters": [
     {
@@ -70,13 +70,44 @@
       "schema": { "type": "string" }
     },
     {
+      "name": "hazard_categories",
+      "description": "Integer hazard codes that represent exposed categories. Defaults to [1, 2, 3, 4].",
+      "optional": true,
+      "default": [1, 2, 3, 4],
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": { "type": "integer" }
+      }
+    },
+    {
+      "name": "no_hazard_value",
+      "description": "Integer hazard code that represents no hazard.",
+      "optional": true,
+      "default": 0,
+      "schema": { "type": "integer" }
+    },
+    {
+      "name": "category",
+      "description": "Optional exposed category code filter, or 'all' (default).",
+      "optional": true,
+      "default": "all",
+      "schema": {
+        "anyOf": [
+          { "type": "integer" },
+          { "type": "string" }
+        ]
+      }
+    },
+    {
       "name": "variable",
       "description": "Which variable to publish. Must match the `variable` of the template registered for output_dataset_id.",
       "optional": true,
       "default": "heatstress_exposure",
       "schema": {
         "type": "string",
-        "enum": ["heatstress_exposure", "exposed_population", "hazard_severity"]
+        "enum": ["heatstress_exposure", "population_by_hazard_category", "exposed_population", "hazard_severity"]
       }
     },
     {
@@ -114,7 +145,10 @@
       "arguments": {
         "hazard": { "from_node": "hazard" },
         "population": { "from_node": "population" },
-        "variable": { "from_parameter": "variable" }
+        "variable": { "from_parameter": "variable" },
+        "hazard_categories": { "from_parameter": "hazard_categories" },
+        "no_hazard_value": { "from_parameter": "no_hazard_value" },
+        "category": { "from_parameter": "category" }
       }
     },
     "publish": {
