@@ -59,3 +59,27 @@
     range: [0.0, 4.0]
   # Categorical: `mode` or `nearest` is the correct pyramid resampling (the
   # default `mean` would invent classes such as 2.5), same caveat as above.
+
+- id: heatstress_population_exposure_forecast_daily
+  name: Heat-stress exposure and exposed population (Daily Forecast)
+  short_name: Heat-stress Exposure
+  description: >-
+    Four-dimensional forecast cube on the WorldPop Global2 100 m grid.
+    Dimensions are time, exposure_level, y, and x. The exposure_level
+    coordinate contains heat-stress categories 1-3, and each slice contains
+    people per cell at exactly that category. Unexposed cells contain zero;
+    missing hazard or population cells remain missing. Hazard categories are
+    resampled to the population grid with nearest-neighbour resampling.
+  variable: heatstress_exposure
+  period_type: daily
+  sync:
+    kind: static
+  produced_by: population_exposure_by_hazard_workflow
+  units: people
+  resolution: 100m x 100m
+  source: WorldPop Global2 and heatstress_hazard_forecast_daily
+  source_url: https://hub.worldpop.org/project/categories?id=3
+  license: CC-BY-4.0
+  display:
+    colormap: reds
+    range: [1, 100.0]

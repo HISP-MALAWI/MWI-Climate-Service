@@ -19,7 +19,11 @@ import requests
 import xarray as xr
 
 from open_climate_service.shared.time import utc_today
-from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
+from open_climate_service.streaming import (
+    BaseDatasetPlugin,
+    daily_period_ids,
+    normalize_period,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -108,10 +112,7 @@ class EnactsPlugin(BaseDatasetPlugin):
         }
 
     async def periods(self, start: str, end: str) -> list[str]:
-        start_dt = np.datetime64(start[:10], "D")
-        end_dt = np.datetime64(end[:10], "D")
-        days = np.arange(start_dt, end_dt + np.timedelta64(1, "D"), dtype="datetime64[D]")
-        return [str(d) for d in days]
+        return daily_period_ids(start, end, cutoff=utc_today())
 
     def _request_with_retry(self, endpoint: str, params: dict) -> requests.Response:
         last_exc: Exception | None = None
