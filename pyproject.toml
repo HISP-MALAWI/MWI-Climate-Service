@@ -6,7 +6,7 @@ description = "Open Climate Service instance for Malawi"
 dependencies = [
     "boto3",
     "cdsapi>=0.7.7",
-    "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git@feat/clim-1451-class-legend",
+    "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git@feat/forecast-cubes",
     "ecmwf-datastores-client",
     "pystac-client>=0.9.0",
     "uvicorn>=0.49.0",
@@ -44,6 +44,6 @@ url = "https://gisidx.github.io/gwi"
 explicit = true
 
 [tool.uv.sources]
-open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/clim-1451-class-legend" }  # OCS PR #339 (forecast cubes); back to main once it merges
+open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/forecast-cubes" }  # OCS PR #339 (forecast cubes); back to main once it merges
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
 dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
