@@ -94,3 +94,27 @@ submit it as a batch job (`POST /jobs`, then `POST /jobs/{id}/results`):
 
 Both source collections must already be ingested for the requested area and
 period. The output dataset is registered and published by `save_result`.
+
+## Growing Degree Days
+
+The `growing_degree_days_workflow` calculates and publishes daily GDD from
+daily minimum and maximum temperature data in degrees Celsius. It provides two
+registered output datasets:
+
+| `output_dataset_id` | Temperature inputs |
+| --- | --- |
+| `gdd_forecast_daily` | `tmin_forecast_daily` and `tmax_forecast_daily` |
+| `gdd_historical_daily` | `enacts_tmin_daily` and `enacts_tmax_daily` |
+
+Use the corresponding input collections and output dataset ID when submitting
+the workflow. Both temperature inputs must cover the same interval and have
+matching time and spatial coordinates.
+
+The underlying `growing_degree_days` custom process calculates:
+
+`max(0, ((Tmin + Tmax) / 2) - Tbase)`
+
+The workflow defaults `base_temperature` to 10°C, and it can be overridden for
+other crops. The output contains daily GDD values (degree-Celsius days); it
+does not accumulate them over time. Submit as a batch job because publication
+uses Zarr.
