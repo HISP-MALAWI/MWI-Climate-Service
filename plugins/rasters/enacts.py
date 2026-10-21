@@ -27,10 +27,9 @@ from open_climate_service.streaming import (
 
 logger = logging.getLogger(__name__)
 
-# "MON" is the fixed dataset code for this ENACTS source (not an
-# abbreviation for "monthly") -- periodicity is controlled separately via
-# the temporalRes param, which is set to "daily" below.
-_KNOWN_DAILY_DATASET_CODES = {"MON"}
+# The ENACTS DST API uses "ALL" for the daily precip and temperature
+# collections. Temporal resolution is controlled separately by temporalRes.
+_KNOWN_DAILY_DATASET_CODES = {"ALL"}
 
 # Per-variable lookup: candidate data_var names to look for in the
 # returned netCDF (tried in order -- server-side naming isn't fully
@@ -80,7 +79,7 @@ class EnactsPlugin(BaseDatasetPlugin):
         self,
         base_url: str,
         variable: str,
-        dataset: str = "MON",
+        dataset: str = "ALL",
         temporal_resolution: str = "daily",
         api_key: str | None = None,
         **_: object,
