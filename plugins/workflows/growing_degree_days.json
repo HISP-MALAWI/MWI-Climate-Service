@@ -1,0 +1,108 @@
+{
+  "id": "growing_degree_days_workflow",
+  "summary": "Calculate and publish daily Growing Degree Days",
+  "description": "Loads daily minimum and maximum temperature collections over the same time interval and area, calculates daily GDD as max(0, ((Tmin + Tmax) / 2) - Tbase), and publishes the result to the selected registered output dataset. Use the forecast temperature collections with gdd_forecast_daily, or the ENACTS historical collections with gdd_historical_daily. Both input collections must share matching time and spatial coordinates.",
+  "categories": ["agriculture", "temperature"],
+  "parameters": [
+    {
+      "name": "tmin_dataset_id",
+      "description": "Daily minimum-temperature collection, e.g. tmin_forecast_daily or enacts_tmin_daily.",
+      "schema": { "type": "string", "pattern": "^\\w+$" }
+    },
+    {
+      "name": "tmax_dataset_id",
+      "description": "Daily maximum-temperature collection, e.g. tmax_forecast_daily or enacts_tmax_daily.",
+      "schema": { "type": "string", "pattern": "^\\w+$" }
+    },
+    {
+      "name": "temporal_extent",
+      "description": "The daily interval to calculate as [first date, last date], available in both input collections.",
+      "schema": {
+        "type": "array",
+        "subtype": "temporal-interval",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "anyOf": [
+            { "type": "string", "format": "date-time", "subtype": "date-time" },
+            { "type": "string", "format": "date", "subtype": "date" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "spatial_extent",
+      "description": "Area to process, as a west/east/south/north bounding box in EPSG:4326 unless crs is given.",
+      "schema": {
+        "type": "object",
+        "subtype": "bounding-box",
+        "required": ["west", "south", "east", "north"],
+        "properties": {
+          "west": { "type": "number" },
+          "south": { "type": "number" },
+          "east": { "type": "number" },
+          "north": { "type": "number" },
+          "crs": {
+            "anyOf": [{ "type": "integer", "minimum": 1000 }, { "type": "string" }],
+            "default": 4326
+          }
+        }
+      }
+    },
+    {
+      "name": "base_temperature",
+      "description": "Crop-specific base temperature in degrees Celsius.",
+      "optional": true,
+      "default": 10,
+      "schema": { "type": "number" }
+    },
+    {
+      "name": "output_dataset_id",
+      "description": "Registered GDD output dataset: gdd_forecast_daily or gdd_historical_daily.",
+      "schema": { "type": "string", "pattern": "^\\w+$" }
+    }
+  ],
+  "returns": {
+    "description": "The published daily Growing Degree Days raster cube.",
+    "schema": { "type": "object", "subtype": "raster-cube" }
+  },
+  "process_graph": {
+    "tmin": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": { "from_parameter": "tmin_dataset_id" },
+        "spatial_extent": { "from_parameter": "spatial_extent" },
+        "temporal_extent": { "from_parameter": "temporal_extent" }
+      }
+    },
+    "tmax": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": { "from_parameter": "tmax_dataset_id" },
+        "spatial_extent": { "from_parameter": "spatial_extent" },
+        "temporal_extent": { "from_parameter": "temporal_extent" }
+      }
+    },
+    "gdd": {
+      "process_id": "growing_degree_days",
+      "arguments": {
+        "tmin": { "from_node": "tmin" },
+        "tmax": { "from_node": "tmax" },
+        "base_temperature": { "from_parameter": "base_temperature" }
+      }
+    },
+    "publish": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": { "from_node": "gdd" },
+        "format": "Zarr",
+        "options": {
+          "dataset_id": { "from_parameter": "output_dataset_id" },
+          "variable": "gdd",
+          "publish": true
+        }
+      },
+      "result": true
+    }
+  }
+}
