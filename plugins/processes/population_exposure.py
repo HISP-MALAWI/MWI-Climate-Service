@@ -19,6 +19,8 @@ from rasterio.enums import Resampling
 # Names a time axis may use. "valid_time" is first because in forecast data
 # "time" is often the (scalar) forecast reference time.
 TIME_NAMES = ("valid_time", "time", "date", "day", "t")
+FORECAST_REFERENCE_DIM = "reference_time"
+FORECAST_LEAD_DIM = "lead_time"
 BAND_DIMS = ("band", "bands")
 SPATIAL_DIMS = ("y", "x")
 SPATIAL_DIM_SET = set(SPATIAL_DIMS)
@@ -52,6 +54,39 @@ def _promote_scalar_time(da: xr.DataArray) -> xr.DataArray:
             if name in da.coords and da[name].ndim == 0:
                 return da.expand_dims(name)
     return da
+
+
+def _forecast_to_valid_time(da: xr.DataArray) -> xr.DataArray:
+    """Convert a single forecast run's reference and lead coordinates to valid dates."""
+    if FORECAST_REFERENCE_DIM not in da.dims or FORECAST_LEAD_DIM not in da.dims:
+        return da
+    if da.sizes[FORECAST_REFERENCE_DIM] != 1:
+        raise ValueError(
+            "forecast hazard must contain exactly one 'reference_time' run"
+        )
+    if FORECAST_REFERENCE_DIM not in da.coords or FORECAST_LEAD_DIM not in da.coords:
+        raise ValueError(
+            "forecast hazard dimensions 'reference_time' and 'lead_time' "
+            "must have coordinates"
+        )
+
+    reference = pd.Timestamp(da[FORECAST_REFERENCE_DIM].values[0])
+    leads = da[FORECAST_LEAD_DIM].values
+    if np.issubdtype(leads.dtype, np.timedelta64):
+        offsets = pd.to_timedelta(leads)
+    elif np.issubdtype(leads.dtype, np.number):
+        units = da[FORECAST_LEAD_DIM].attrs.get("units", "days")
+        offsets = pd.to_timedelta(leads, unit=units)
+    else:
+        raise ValueError(
+            "forecast hazard 'lead_time' coordinate must contain numeric "
+            "offsets or timedeltas"
+        )
+
+    valid_times = reference + offsets
+    da = da.isel({FORECAST_REFERENCE_DIM: 0}, drop=True)
+    da = da.rename({FORECAST_LEAD_DIM: "valid_time"})
+    return da.assign_coords(valid_time=("valid_time", valid_times.to_numpy()))
 
 
 def _snapshot(da: xr.DataArray, name: str) -> xr.DataArray:
@@ -206,6 +241,7 @@ def _select_indices(times: np.ndarray, date) -> list[int]:
 
 def _hazard_steps(hazard, date, start_date) -> list[tuple[object, xr.DataArray]]:
     """Split the hazard into (day, 2-D raster) pairs, one per time step."""
+    hazard = _forecast_to_valid_time(hazard)
     hazard = _promote_scalar_time(hazard)
     time_dim = _find_time_dim(hazard)
 
@@ -352,7 +388,8 @@ def _stack(items: list[xr.DataArray]) -> xr.DataArray:
                 "are given. Other values, including the nodata code, are "
                 "treated as missing. Steps may be a time / valid_time / date "
                 "/ day / t dimension, a scalar time coordinate, or bands "
-                "(one per step)."
+                "(one per step). A forecast run with reference_time and "
+                "lead_time coordinates is converted to valid dates."
             )
         },
         "population": {
