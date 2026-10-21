@@ -17,6 +17,8 @@ dependencies = [
     "h5py>=3.16.0",
     "dhis2-client",
     "python-dotenv>=1.2.2",
+    # Experimental dataset plugins, found through their entry point; see the README.
+    "ocs-plugins",
 ]
 
 [tool.uv]
@@ -37,6 +39,9 @@ override-dependencies = [
     # aiobotocore (via icechunk/s3fs) requires botocore<1.43.1; pin boto3 accordingly
     "boto3>=1.42.90,<1.43.1",
     "botocore>=1.42.90,<1.43.1",
+    # ocs-plugins pins OCS to main in its own sources; this keeps the forecast-cubes branch
+    # below. Drop it, with that branch, once OCS PR #339 merges.
+    "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git@feat/forecast-cubes",
 ]
 
 [[tool.uv.index]]
@@ -48,3 +53,4 @@ explicit = true
 open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/forecast-cubes" }  # OCS PR #339 (forecast cubes); back to main once it merges
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
 dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
+ocs-plugins = { git = "https://github.com/dhis2-chap/ocs-plugins.git", branch = "main" }
