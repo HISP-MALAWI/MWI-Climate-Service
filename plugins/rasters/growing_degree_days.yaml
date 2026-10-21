@@ -1,0 +1,34 @@
+- id: gdd_forecast_daily
+  name: Growing Degree Days (Daily Forecast)
+  short_name: GDD Forecast
+  description: >-
+    Daily Growing Degree Days calculated from forecast daily minimum and
+    maximum air temperature using max(0, ((Tmin + Tmax) / 2) - 10°C).
+  variable: gdd
+  period_type: daily
+  sync:
+    kind: static
+  produced_by: growing_degree_days_workflow
+  units: degree_Celsius day
+  source: DCCMS daily temperature forecast
+  source_url: https://www.metmalawi.gov.mw/
+  display:
+    colormap: YlOrRd
+    range: [0, 20]
+
+- id: gdd_historical_daily
+  name: Growing Degree Days (Historical)
+  short_name: Historical GDD
+  description: >-
+    Daily historical Growing Degree Days calculated from ENACTS daily minimum
+    and maximum air temperature using max(0, ((Tmin + Tmax) / 2) - 10°C).
+  variable: gdd
+  period_type: daily
+  sync:
+    kind: static
+  produced_by: growing_degree_days_workflow
+  units: degree_Celsius day
+  source: ENACTS historical daily temperature
+  display:
+    colormap: YlOrRd
+    range: [0, 20]
