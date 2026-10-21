@@ -44,6 +44,27 @@ The API starts at http://localhost:8002. Visit `/manage` to ingest datasets.
 | Vegetation Index NDVI (CLMS) | Dekadal | Copernicus CLMS |
 | PM2.5 Surface Concentration (CAMS EAC4) | 3-hourly | Copernicus ADS |
 
+## Experimental dataset plugins (ocs-plugins)
+
+The instance also installs [ocs-plugins](https://github.com/dhis2-chap/ocs-plugins), experimental
+dataset plugins for OCS, found through their entry point: no `plugins_dir` change is needed. Their
+datasets are listed at `GET /data-sources` and on the Data sources page next to the built-in ones,
+among them ERA5-Land daily statistics, CAMS dust, PM10 and PM2.5, GloFAS river discharge, IMERG,
+MODIS NDVI, EVI and land surface temperature, CLMS GPP, NPP and NDVI, ESA CCI and WorldCover land
+cover with their classes, and the 90 m DEM. Several need credentials; see the ocs-plugins README.
+They are for testing, not yet for production.
+
+A template in `plugins/` with the same id as one in ocs-plugins overrides it. That is the case for
+`clms_gpp_dekadal`, `clms_ndvi_dekadal` and `modis_landcover_yearly`. Other local templates read
+the same sources under other ids: `cams_pm25_hourly`, `esa_landcover_yearly`, `clms_npp_dekad`
+and `copernicus_dem_elevation`. Where the ocs-plugins version does what is needed, the local
+plugin and template can be removed.
+
+OCS itself is pinned to the `feat/forecast-cubes` branch (OCS PR #339) for the forecast datasets,
+in `[tool.uv.sources]` and in `override-dependencies`, since ocs-plugins pins OCS `main` in its
+own sources. Both move back to `main` once #339 merges. `make upgrade` re-locks OCS and
+ocs-plugins against their branch heads.
+
 ## Population exposed to a hazard
 
 The `population_exposure_by_hazard` workflow overlays a published hazard
