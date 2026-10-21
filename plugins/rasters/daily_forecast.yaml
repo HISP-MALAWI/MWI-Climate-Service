@@ -5,6 +5,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -36,6 +37,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -66,6 +68,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -134,6 +137,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -166,6 +170,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -199,6 +204,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -231,6 +237,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -263,6 +270,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -295,6 +303,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -327,6 +336,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -359,6 +369,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -391,6 +402,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -423,6 +435,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -455,6 +468,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -486,6 +500,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -516,6 +531,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -548,6 +564,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -580,6 +597,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -612,6 +630,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
@@ -644,6 +663,7 @@
   period_type: daily
   sync:
     kind: temporal
+    # One run per issue date, appended: a sync adds the new run and keeps the earlier ones.
     execution: append
   temporal_direction: future
   extents:
