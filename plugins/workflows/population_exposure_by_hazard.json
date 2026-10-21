@@ -1,7 +1,7 @@
 {
   "id": "population_exposure_by_hazard_workflow",
   "summary": "Map forecast hazard exposure and WorldPop population",
-  "description": "Loads a categorical hazard forecast and one WorldPop population year over the requested area, then overlays hazard categories on the population grid using nearest-neighbour resampling. Configure the exposed hazard codes with hazard_categories and the unexposed code with no_hazard_value; other values are treated as missing.\n\nThe default `exposed_population` output counts population in exposed hazard cells. Use `variable: population_by_hazard_category` to publish a four-dimensional GeoZarr variable with `time`, `exposure_level`, `y`, and `x` dimensions. Each category slice contains the population in cells at exactly that hazard code; unexposed cells contain zero and missing cells remain missing. `heatstress_exposure` and `hazard_severity` modes are also available; publish one variable per run.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). The hazard temporal extent can include multiple forecast dates; population_temporal_extent selects one WorldPop year.",
+  "description": "Loads a categorical hazard forecast and one WorldPop population year over the requested area, then overlays hazard categories on the population grid using nearest-neighbour resampling. Configure the exposed hazard codes with hazard_categories and the unexposed code with no_hazard_value; other values are treated as missing.\n\nThe default `exposed_population` output counts population in exposed hazard cells. Use `variable: population_by_hazard_category` to publish a four-dimensional GeoZarr variable with `time`, `exposure_level`, `y`, and `x` dimensions. Each category slice contains the population in cells at exactly that hazard code; unexposed cells contain zero and missing cells remain missing. `hazard_severity` is also available; publish one variable per run.\n\nZarr output cannot be produced synchronously, so run this as a batch job (POST /jobs, then POST /jobs/{id}/results). The hazard temporal extent can include multiple forecast dates; population_temporal_extent selects one WorldPop year.",
   "categories": ["exposure", "hazards", "population"],
   "parameters": [
     {
@@ -105,7 +105,7 @@
       "default": "exposed_population",
       "schema": {
         "type": "string",
-        "enum": ["heatstress_exposure", "population_by_hazard_category", "exposed_population", "hazard_severity"]
+        "enum": ["population_by_hazard_category", "exposed_population", "hazard_severity"]
       }
     },
     {
