@@ -15,7 +15,7 @@ class HeatStressHazardPlugin(DailyForecastPlugin):
     def __init__(
         self,
         base_url: str,
-        dataset: str = "tmean",
+        dataset: str = "tmax",
         hazard_variable: str = "heatstress_hazard",
         max_forecast_days: int = _DEFAULT_MAX_FORECAST_DAYS,
         **kwargs: Any,
