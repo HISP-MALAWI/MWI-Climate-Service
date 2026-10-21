@@ -70,7 +70,7 @@
     people per cell at exactly that category. Unexposed cells contain zero;
     missing hazard or population cells remain missing. Hazard categories are
     resampled to the population grid with nearest-neighbour resampling.
-  variable: heatstress_exposure
+  variable: population_by_hazard_category
   period_type: daily
   sync:
     kind: static
