@@ -52,14 +52,13 @@ dataset. Set `hazard_categories` to the exposed integer codes in the selected
 hazard collection and `no_hazard_value` to its unexposed code (defaults are
 `[1, 2, 3, 4]` and `0`). Values outside those codes are treated as missing.
 Hazard categories are resampled to the WorldPop grid using nearest-neighbour
-resampling. The default heat-stress output remains available for backwards
-compatibility; a generic four-dimensional managed Zarr cube can publish the
-population separately for each configured category:
+resampling. The workflow defaults to `variable: exposed_population`; select
+`population_by_hazard_category` to publish a four-dimensional managed Zarr
+cube with population separately for each configured category:
 
 | `variable` | `output_dataset_id` | Contents |
 | --- | --- | --- |
-| `heatstress_exposure` (default) | `heatstress_population_exposure_forecast_daily` | Population per cell at each heat-stress exposure level (categories 1-3) |
-| `population_by_hazard_category` | `dry_spell_population_by_hazard_category` | Population per cell at each configured hazard category |
+| `population_by_hazard_category` | `heatstress_population_exposure_forecast_daily` | Population per cell at each configured heat-stress exposure category |
 | `exposed_population` | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
 | `hazard_severity` | `dry_spell_hazard_severity_100m` | Hazard category 0-4 on the WorldPop grid |
 
@@ -72,12 +71,13 @@ contain zero. It does not include a separate hazard-level band. For example,
 to use hazard classes 2, 4, and 8 with -1 as the unexposed code, set
 `hazard_categories` to `[2, 4, 8]` and `no_hazard_value` to `-1`.
 
-`hazard_temporal_extent` can span multiple forecast dates; use one WorldPop
-year for `population_temporal_extent`, a bounding box, and
-`heatstress_hazard_forecast_daily` as the `hazard_dataset_id` (the default).
-For other hazards, select the matching output template and `variable`; add a
-template in `plugins/rasters/pop_exposure.yaml` for each published variable
-and hazard.
+`hazard_dataset_id` is required; the workflow does not default to a hazard
+collection. `hazard_temporal_extent` can span multiple forecast dates; use one
+WorldPop year for `population_temporal_extent` and provide a bounding box. For
+heat stress, use `heatstress_hazard_forecast_daily` as the hazard dataset and
+the matching category-cube template above. For other hazards, select a
+registered output template whose `variable` matches; add a template in
+`plugins/rasters/pop_exposure.yaml` for each additional variable and hazard.
 Zarr output cannot be produced synchronously, so submit it as a batch job
 (`POST /jobs`, then `POST /jobs/{id}/results`):
 
