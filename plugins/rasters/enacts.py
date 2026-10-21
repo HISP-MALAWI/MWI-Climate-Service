@@ -19,14 +19,17 @@ import requests
 import xarray as xr
 
 from open_climate_service.shared.time import utc_today
-from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
+from open_climate_service.streaming import (
+    BaseDatasetPlugin,
+    daily_period_ids,
+    normalize_period,
+)
 
 logger = logging.getLogger(__name__)
 
-# "MON" is the fixed dataset code for this ENACTS source (not an
-# abbreviation for "monthly") -- periodicity is controlled separately via
-# the temporalRes param, which is set to "daily" below.
-_KNOWN_DAILY_DATASET_CODES = {"MON"}
+# The ENACTS DST API uses "ALL" for the daily precip and temperature
+# collections. Temporal resolution is controlled separately by temporalRes.
+_KNOWN_DAILY_DATASET_CODES = {"ALL"}
 
 # Per-variable lookup: candidate data_var names to look for in the
 # returned netCDF (tried in order -- server-side naming isn't fully
@@ -76,7 +79,7 @@ class EnactsPlugin(BaseDatasetPlugin):
         self,
         base_url: str,
         variable: str,
-        dataset: str = "MON",
+        dataset: str = "ALL",
         temporal_resolution: str = "daily",
         api_key: str | None = None,
         **_: object,
@@ -108,10 +111,7 @@ class EnactsPlugin(BaseDatasetPlugin):
         }
 
     async def periods(self, start: str, end: str) -> list[str]:
-        start_dt = np.datetime64(start[:10], "D")
-        end_dt = np.datetime64(end[:10], "D")
-        days = np.arange(start_dt, end_dt + np.timedelta64(1, "D"), dtype="datetime64[D]")
-        return [str(d) for d in days]
+        return daily_period_ids(start, end, cutoff=utc_today())
 
     def _request_with_retry(self, endpoint: str, params: dict) -> requests.Response:
         last_exc: Exception | None = None

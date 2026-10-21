@@ -46,25 +46,40 @@ The API starts at http://localhost:8002. Visit `/manage` to ingest datasets.
 
 ## Population exposed to a hazard
 
-The `population_exposure_by_hazard` workflow overlays a published hazard
-snapshot with the built-in WorldPop Global2 100 m total-population dataset.
-Hazard categories 1-4 are treated as exposed (4 is the most severe); category
-0 is unexposed. Severity is resampled to the WorldPop grid using
-nearest-neighbour resampling. Each run publishes one variable as a managed
-Zarr dataset, chosen with `variable`:
+The `population_exposure_by_hazard` workflow overlays a published categorical
+hazard forecast with the built-in WorldPop Global2 100 m total-population
+dataset. Set `hazard_categories` to the exposed integer codes in the selected
+hazard collection and `no_hazard_value` to its unexposed code (defaults are
+`[1, 2, 3, 4]` and `0`). Values outside those codes are treated as missing.
+Hazard categories are resampled to the WorldPop grid using nearest-neighbour
+resampling. The workflow defaults to `variable: exposed_population`; select
+`population_by_hazard_category` to publish a four-dimensional managed Zarr
+cube with population separately for each configured category:
 
 | `variable` | `output_dataset_id` | Contents |
 | --- | --- | --- |
-| `exposed_population` (default) | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
+| `population_by_hazard_category` | `heatstress_population_exposure_forecast_daily` | Population per cell at each configured heat-stress exposure category |
+| `exposed_population` | `dry_spell_population_exposure` | People per WorldPop cell where the hazard is 1-4 |
 | `hazard_severity` | `dry_spell_hazard_severity_100m` | Hazard category 0-4 on the WorldPop grid |
 
 `output_dataset_id` must name a template in `plugins/rasters/pop_exposure.yaml`
 whose `variable` matches, so run the workflow once per variable.
+The category cube's `exposure_level` dimension makes it possible to select
+population exposure for a specific configured category. Each level contains
+the population in cells with exactly that hazard category; unexposed cells
+contain zero. It does not include a separate hazard-level band. For example,
+to use hazard classes 2, 4, and 8 with -1 as the unexposed code, set
+`hazard_categories` to `[2, 4, 8]` and `no_hazard_value` to `-1`.
 
-Provide a single date for `hazard_temporal_extent`, a single WorldPop year for
-`population_temporal_extent`, a bounding box and the `hazard_dataset_id` (for
-example `dry_spell_hazard`). Zarr output cannot be produced synchronously, so
-submit it as a batch job (`POST /jobs`, then `POST /jobs/{id}/results`):
+`hazard_dataset_id` is required; the workflow does not default to a hazard
+collection. `hazard_temporal_extent` can span multiple forecast dates; use one
+WorldPop year for `population_temporal_extent` and provide a bounding box. For
+heat stress, use `heatstress_hazard_forecast_daily` as the hazard dataset and
+the matching category-cube template above. For other hazards, select a
+registered output template whose `variable` matches; add a template in
+`plugins/rasters/pop_exposure.yaml` for each additional variable and hazard.
+Zarr output cannot be produced synchronously, so submit it as a batch job
+(`POST /jobs`, then `POST /jobs/{id}/results`):
 
 ```json
 {
@@ -76,6 +91,8 @@ submit it as a batch job (`POST /jobs`, then `POST /jobs/{id}/results`):
           "hazard_dataset_id": "dry_spell_hazard",
           "hazard_temporal_extent": ["2026-01-01", "2026-01-01"],
           "population_temporal_extent": ["2025-01-01", "2025-12-31"],
+          "hazard_categories": [1, 2, 3, 4],
+          "no_hazard_value": 0,
           "spatial_extent": {
             "west": 32.675,
             "east": 35.916666,

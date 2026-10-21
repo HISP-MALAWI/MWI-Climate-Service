@@ -14,7 +14,7 @@
     params:
       base_url: "http://168.253.224.242:9091/dst"
       variable: "precip"
-      dataset: "MON"
+      dataset: "ALL"
   units: "mm"
   cf_attributes:
     units: "mm"
@@ -40,7 +40,7 @@
     params:
       base_url: "http://168.253.224.242:9091/dst"
       variable: "tmax"
-      dataset: "MON"
+      dataset: "ALL"
   units: "degC"
   cf_attributes:
     units: "degC"
@@ -66,7 +66,7 @@
     params:
       base_url: "http://168.253.224.242:9091/dst"
       variable: "tmin"
-      dataset: "MON"
+      dataset: "ALL"
   units: "degC"
   cf_attributes:
     units: "degC"
