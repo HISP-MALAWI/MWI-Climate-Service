@@ -32,10 +32,46 @@ logger = logging.getLogger(__name__)
 _RES_DEG = 1.0 / 360.0
 
 _COLLECTION = "clms_ndvi_global_300m_10daily_v3_cog"
-_ASSET_KEY = "ndvi"
+# CDSE now publishes the S3 link under "ndvi300_ndvi"; the bare "ndvi" key is an
+# href-less stub on current items. Keys are tried in order, so older items that
+# still use "ndvi" keep working.
+_ASSET_KEYS = ("ndvi300_ndvi", "ndvi")
 _STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 _FIRST_YEAR = 2014
 _VAR = "ndvi"
+
+# Candidate items requested per search, so a malformed item can be skipped
+# without leaving the plugin with nothing to fall back on.
+_SEARCH_LIMIT = 10
+
+
+def _first_usable_item(search, asset_keys: tuple[str, ...]) -> tuple[dict, str] | None:
+    """Return (raw_item, href) for the first item with an href on any of `asset_keys`.
+
+    Keys are tried in order per item. Uses items_as_dicts() so a stub asset with
+    no href doesn't make pystac raise KeyError('href') for the whole search
+    (pystac requires an href on every asset when it builds Item objects).
+    """
+    for raw in search.items_as_dicts():
+        assets = raw.get("assets") or {}
+        for key in asset_keys:
+            href = (assets.get(key) or {}).get("href")
+            if href:
+                return raw, href
+        logger.warning(
+            "Skipping STAC item %s: none of %s has an href (assets present: %s)",
+            raw.get("id"),
+            list(asset_keys),
+            sorted(assets.keys()),
+        )
+    return None
+
+
+def _item_date(raw: dict) -> str | None:
+    """ISO date (YYYY-MM-DD) of a raw STAC item, or None if it has no timestamp."""
+    props = raw.get("properties") or {}
+    stamp = props.get("datetime") or props.get("start_datetime") or props.get("end_datetime")
+    return stamp[:10] if stamp else None
 
 
 class ClmsNdviPlugin(BaseDatasetPlugin):
@@ -52,13 +88,20 @@ class ClmsNdviPlugin(BaseDatasetPlugin):
 
     async def periods(self, start: str, end: str) -> list[str]:
         import pystac_client
+
         clamped_start = max(start[:10], f"{_FIRST_YEAR}-01-01")
         catalog = pystac_client.Client.open(_STAC_URL)
-        search = catalog.search(collections=[_COLLECTION], max_items=1, sortby="-datetime")
-        items = list(search.items())
-        if not items:
+        search = catalog.search(
+            collections=[_COLLECTION], max_items=_SEARCH_LIMIT, sortby="-datetime"
+        )
+        found = _first_usable_item(search, _ASSET_KEYS)
+        if found is None:
             return []
-        latest = items[0].datetime.date().isoformat()
+        item, _href = found
+        latest = _item_date(item)
+        if latest is None:
+            logger.warning("Latest usable STAC item %s has no timestamp", item.get("id"))
+            return []
         # `dekad_period_ids` snaps the start down to the dekad containing it, where the local
         # enumerator this replaced skipped that dekad. Snapping is the correct reading — the
         # dekad is the smallest unit the data has, so a range starting on the 15th still needs
@@ -80,16 +123,17 @@ class ClmsNdviPlugin(BaseDatasetPlugin):
             collections=[_COLLECTION],
             bbox=[xmin, ymin, xmax, ymax],
             datetime=f"{period_id}/{window_end.isoformat()}",
-            max_items=1,
+            max_items=_SEARCH_LIMIT,
         )
-        items = list(search.items())
-        if not items:
-            raise ValueError(f"No CLMS NDVI item found for {period_id}")
+        found = _first_usable_item(search, _ASSET_KEYS)
+        if found is None:
+            raise ValueError(
+                f"No usable CLMS NDVI item (href on any of {list(_ASSET_KEYS)}) for {period_id}"
+            )
 
-        item = items[0]
-        s3_url = item.assets[_ASSET_KEY].href
+        item, s3_url = found
         s3_key = s3_url.removeprefix("s3://eodata/")
-        logger.info("Fetching CLMS NDVI %s: %s", period_id, s3_url)
+        logger.info("Fetching CLMS NDVI %s (%s): %s", period_id, item.get("id"), s3_url)
 
         # Use GDAL VSIS3 range requests (COG) — only downloads tiles covering the bbox, not the full global file
         session = boto3.Session(profile_name="cdse")

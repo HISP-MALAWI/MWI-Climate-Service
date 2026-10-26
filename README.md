@@ -1,6 +1,6 @@
 # Malawi Climate Service
 
-This project is based on the [Open Climate Service](https://dhis2.github.io/climate-api/) and provides climate data for Sri Lanka, including ERA5-Land reanalysis, CHIRPS3 precipitation, and WorldPop population data.
+This project is based on the [Open Climate Service](https://dhis2.github.io/climate-api/) and provides climate data for Malawi, including ERA5 reanalysis, CHIRPS3 precipitation, and WorldPop population data.
 
 ## Installation
 
@@ -43,6 +43,18 @@ The API starts at http://localhost:8002. Visit `/manage` to ingest datasets.
 | Gross Primary Production (CLMS) | Dekadal | Copernicus CLMS |
 | Vegetation Index NDVI (CLMS) | Dekadal | Copernicus CLMS |
 | PM2.5 Surface Concentration (CAMS EAC4) | 3-hourly | Copernicus ADS |
+| Mean temperature (ERA5) | Daily | Copernicus Climate Data Store |
+
+The ERA5 mean-temperature plugin requests hourly 2 m air temperature and
+averages the 24 hourly values for each UTC day. Results are converted from
+kelvin to degrees Celsius. To enable downloads, register at the
+[Copernicus Climate Data Store](https://cds.climate.copernicus.eu/), create an
+API token, and configure the CDS API credentials in `~/.cdsapirc`:
+
+```yaml
+url: https://cds.climate.copernicus.eu/api
+key: <your-API-token>
+```
 
 ## Population exposed to a hazard
 

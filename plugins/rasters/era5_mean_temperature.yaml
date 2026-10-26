@@ -1,0 +1,26 @@
+- id: era5_mean_temperature_daily
+  name: Mean Temperature (ERA5)
+  short_name: Mean Temp
+  variable: tmean
+  period_type: daily
+  sync:
+    kind: temporal
+  extents:
+    spatial:
+      bbox: [-180, -90, 180, 90]
+    temporal:
+      begin: "1940-01-01"
+      resolution: P1D
+  ingestion:
+    plugin: rasters.era5_mean_temperature.Era5MeanTemperaturePlugin
+  units: "degC"
+  cf_attributes:
+    units: "degC"
+    standard_name: air_temperature
+    cell_methods: "time: mean"
+  resolution: 0.25° × 0.25°
+  source: ERA5 reanalysis
+  source_url: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
+  display:
+    colormap: RdYlBu_r
+    range: [10, 35]
