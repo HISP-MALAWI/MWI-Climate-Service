@@ -25,7 +25,7 @@ import numpy as np
 import rioxarray  # noqa: F401  # activates the .rio accessor used below
 import xarray as xr
 
-from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
+from open_geo_service.streaming import BaseDatasetPlugin, normalize_period
 
 _LAT_KEYS = ("lat", "latitude", "y")
 _LON_KEYS = ("lon", "longitude", "x")

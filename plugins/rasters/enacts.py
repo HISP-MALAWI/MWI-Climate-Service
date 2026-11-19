@@ -18,8 +18,8 @@ import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.shared.time import utc_today
-from open_climate_service.streaming import (
+from open_geo_service.shared.time import utc_today
+from open_geo_service.streaming import (
     BaseDatasetPlugin,
     daily_period_ids,
     normalize_period,

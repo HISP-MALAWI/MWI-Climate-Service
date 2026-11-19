@@ -11,6 +11,7 @@
     The 28 districts of Malawi, from Overture Maps administrative divisions.
   license: ODbL-1.0
   attribution: © OpenStreetMap contributors, © Overture Maps Foundation
+  source_url: https://docs.overturemaps.org/guides/divisions/
   providers:
     - name: Overture Maps
       url: https://overturemaps.org

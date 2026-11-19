@@ -25,7 +25,7 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
-from open_climate_service.streaming import BaseDatasetPlugin
+from open_geo_service.streaming import BaseDatasetPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ class ModisLandCoverPlugin(BaseDatasetPlugin):
                 da = da.where(da.notnull(), tile_aligned)
 
         # 255 is the MODIS fill value, and NaN is fill or a gap between tiles. Both become 0,
-        # which is not an LC_Type1 class (1-17) and is the background OCS gives integer
+        # which is not an LC_Type1 class (1-17) and is the background Open Geo Service gives integer
         # rasters; the template declares it as nodata. Filled explicitly: casting NaN to
         # uint8 is undefined behaviour that only happens to produce 0.
         da = da.where(da < 255).fillna(0).astype("uint8")

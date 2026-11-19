@@ -1,6 +1,6 @@
 # Malawi Climate Service
 
-This project is based on the [Open Climate Service](https://dhis2.github.io/climate-api/) and provides climate data for Sri Lanka, including ERA5-Land reanalysis, CHIRPS3 precipitation, and WorldPop population data.
+This project is an [Open Geo Service](https://github.com/dhis2/open-geo-service) instance and provides climate data for Malawi, including ERA5-Land reanalysis, CHIRPS3 precipitation, and WorldPop population data.
 
 ## Installation
 
@@ -18,7 +18,7 @@ This project is based on the [Open Climate Service](https://dhis2.github.io/clim
 3. **Configure environment:**
    ```sh
    cp .env.example .env
-   # Edit .env and set CLIMATE_API_CONFIG to the absolute path of climate-api.yaml
+   # Edit .env and set GEOSERVICE_CONFIG to the absolute path of geoservice.yaml
    # Set PROJ_DATA to the rasterio proj_data path in your venv
    ```
 
@@ -44,26 +44,34 @@ The API starts at http://localhost:8002. Visit `/manage` to ingest datasets.
 | Vegetation Index NDVI (CLMS) | Dekadal | Copernicus CLMS |
 | PM2.5 Surface Concentration (CAMS EAC4) | 3-hourly | Copernicus ADS |
 
-## Experimental dataset plugins (ocs-plugins)
+## Experimental dataset plugins (open-geo-service-plugins)
 
-The instance also installs [ocs-plugins](https://github.com/dhis2-chap/ocs-plugins), experimental
-dataset plugins for OCS, found through their entry point: no `plugins_dir` change is needed. Their
+The instance also installs
+[open-geo-service-plugins](https://github.com/dhis2-chap/open-geo-service-plugins), experimental
+dataset plugins for Open Geo Service, found through their entry point: no `plugins_dir` change is needed. Their
 datasets are listed at `GET /data-sources` and on the Data sources page next to the built-in ones,
 among them ERA5-Land daily statistics, CAMS dust, PM10 and PM2.5, GloFAS river discharge, IMERG,
 MODIS NDVI, EVI and land surface temperature, CLMS GPP, NPP and NDVI, ESA CCI and WorldCover land
-cover with their classes, and the 90 m DEM. Several need credentials; see the ocs-plugins README.
+cover with their classes, and the 90 m DEM. Several need credentials; see the open-geo-service-plugins README.
 They are for testing, not yet for production.
 
-A template in `plugins/` with the same id as one in ocs-plugins overrides it. That is the case for
+A template in `plugins/` with the same id as one in open-geo-service-plugins overrides it. That is the case for
 `clms_gpp_dekadal`, `clms_ndvi_dekadal` and `modis_landcover_yearly`. Other local templates read
 the same sources under other ids: `cams_pm25_hourly`, `esa_landcover_yearly`, `clms_npp_dekad`
-and `copernicus_dem_elevation`. Where the ocs-plugins version does what is needed, the local
+and `copernicus_dem_elevation`. Where the open-geo-service-plugins version does what is needed, the local
 plugin and template can be removed.
 
-OCS itself is pinned to the `feat/forecast-cubes` branch (OCS PR #339) for the forecast datasets,
-in `[tool.uv.sources]` and in `override-dependencies`, since ocs-plugins pins OCS `main` in its
-own sources. Both move back to `main` once #339 merges. `make upgrade` re-locks OCS and
-ocs-plugins against their branch heads.
+Open Geo Service itself is pinned to the `feat/forecast-cubes` branch (Open Geo Service PR #339)
+for the forecast datasets, in `[tool.uv.sources]` and in `override-dependencies`, since
+open-geo-service-plugins pins Open Geo Service `main` in its own sources. Both move back to `main`
+once #339 merges. `make upgrade` re-locks Open Geo Service and open-geo-service-plugins against
+their branch heads.
+
+## Dataset templates
+
+A template that fetches data (one with an `ingestion` plugin, or a feature template with a
+`provider`) must declare `source_url`, the landing page of the source the data comes from. It is
+published as the STAC collection's `via` link, and the service refuses to start without it.
 
 ## Population exposed to a hazard
 

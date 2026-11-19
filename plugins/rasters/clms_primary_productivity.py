@@ -25,8 +25,8 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
-from open_climate_service.shared.time import dekad_period_ids
-from open_climate_service.streaming.protocol import GridSpec
+from open_geo_service.shared.time import dekad_period_ids
+from open_geo_service.streaming.protocol import GridSpec
 
 logger = logging.getLogger(__name__)
 

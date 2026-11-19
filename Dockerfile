@@ -51,11 +51,11 @@ RUN mkdir -p /app/data && chown -R ocs:ocs /app/data
 # Set up the virtual environment
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
-    CLIMATE_SERVICE_CONFIG=/app/climate-service.yaml \
+    GEOSERVICE_CONFIG=/app/geoservice.yaml \
     PYTHONUNBUFFERED=1
 
 USER ocs
 
 EXPOSE 8002
 
-CMD ["python", "-m", "uvicorn", "open_climate_service.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["python", "-m", "uvicorn", "open_geo_service.main:app", "--host", "0.0.0.0", "--port", "8002"]
