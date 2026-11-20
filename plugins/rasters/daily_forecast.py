@@ -34,8 +34,8 @@ import numpy as np
 import requests
 import xarray as xr
 
-from open_climate_service.shared import forecast
-from open_climate_service.streaming import BaseDatasetPlugin
+from open_geo_service.shared import forecast
+from open_geo_service.streaming import BaseDatasetPlugin
 from rasters.dccms_runs import forecast_run
 
 logger = logging.getLogger(__name__)

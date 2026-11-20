@@ -19,11 +19,11 @@
   # Match the hazard dataset's cadence: the output keeps the hazard snapshot's
   # time axis, not WorldPop's yearly one.
   period_type: daily
-  # The hazard is a forecast, but the OCS docs say `temporal_direction: future`
+  # The hazard is a forecast, but the Open Geo Service docs say `temporal_direction: future`
   # cannot be combined with `sync.kind: static` (registration rejects it).
   # Derived datasets must be static, so this stays at the default. `past` only
   # affects the ingest form's start/end handling, which static datasets skip.
-  # Try `future` if your OCS version accepts it.
+  # Try `future` if your Open Geo Service version accepts it.
   sync:
     kind: static
   produced_by: population_exposure_by_hazard_workflow

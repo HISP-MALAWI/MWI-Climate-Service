@@ -18,6 +18,7 @@
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
   source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: RdYlBu_r
     range: [10, 35]
@@ -42,6 +43,7 @@
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
   source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: RdYlBu_r
     range: [5, 30]
@@ -66,6 +68,7 @@
   units: "°C"
   resolution: 0.5° × 0.5° (~55 km)
   source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: RdYlBu_r
     range: [15, 40]
@@ -90,6 +93,7 @@
   units: "mm"
   resolution: 0.5° × 0.5° (~55 km)
   source: ACCESS-ESM1-5, SSP1-2.6 scenario
+  source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: YlGnBu
     range: [0, 50]

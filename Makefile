@@ -6,9 +6,9 @@ help: ## Show this help
 install: ## Install dependencies with uv
 	uv sync
 
-upgrade: ## Re-lock against the current open-climate-service and ocs-plugins branches and sync
-	uv lock --upgrade-package open-climate-service --upgrade-package ocs-plugins
+upgrade: ## Re-lock against the current open-geo-service and open-geo-service-plugins branches and sync
+	uv lock --upgrade-package open-geo-service --upgrade-package open-geo-service-plugins
 	uv sync
 
 run: ## Start the app with uvicorn
-	uv run --env-file .env uvicorn open_climate_service.main:app --reload --reload-include "*.yaml" --reload-include "*.yml" --port 8002
+	uv run --env-file .env uvicorn open_geo_service.main:app --reload --reload-include "*.yaml" --reload-include "*.yml" --port 8002

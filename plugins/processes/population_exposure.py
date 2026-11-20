@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import rioxarray  # noqa: F401  # activates the .rio accessor
 import xarray as xr
-from open_climate_service.process import process
+from open_geo_service.process import process
 from rasterio.enums import Resampling
 
 # Names a time axis may use. "valid_time" is first because in forecast data

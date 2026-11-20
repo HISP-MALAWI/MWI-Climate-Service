@@ -491,8 +491,10 @@
   source_url: https://www.metmalawi.gov.mw/
   display:
     colormap: Viridis
+    # The upper end was missing; until a fixed height is chosen, it follows the data.
     range:
     - 0
+    - p98
 - id: frost_risk_forecast_daily
   name: Frost Risk (Daily Forecast)
   short_name: Frost Risk

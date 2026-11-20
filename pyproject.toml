@@ -2,11 +2,11 @@
 name = "Malawi-climate-service"
 version = "0.1.0"
 requires-python = ">=3.13,<3.14"
-description = "Open Climate Service instance for Malawi"
+description = "Open Geo Service instance for Malawi"
 dependencies = [
     "boto3",
     "cdsapi>=0.7.7",
-    "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git@feat/forecast-cubes",
+    "open-geo-service[server] @ git+https://github.com/dhis2/open-geo-service.git@feat/forecast-cubes",
     "ecmwf-datastores-client",
     "pystac-client>=0.9.0",
     "uvicorn>=0.49.0",
@@ -17,7 +17,7 @@ dependencies = [
     "dhis2-client",
     "python-dotenv>=1.2.2",
     # Experimental dataset plugins, found through their entry point; see the README.
-    "ocs-plugins",
+    "open-geo-service-plugins",
 ]
 
 [tool.uv]
@@ -38,9 +38,9 @@ override-dependencies = [
     # aiobotocore (via icechunk/s3fs) requires botocore<1.43.1; pin boto3 accordingly
     "boto3>=1.42.90,<1.43.1",
     "botocore>=1.42.90,<1.43.1",
-    # ocs-plugins pins OCS to main in its own sources; this keeps the forecast-cubes branch
-    # below. Drop it, with that branch, once OCS PR #339 merges.
-    "open-climate-service[server] @ git+https://github.com/dhis2/open-climate-service.git@feat/forecast-cubes",
+    # open-geo-service-plugins pins Open Geo Service to main in its own sources; this keeps the
+    # forecast-cubes branch below. Drop it, with that branch, once Open Geo Service PR #339 merges.
+    "open-geo-service[server] @ git+https://github.com/dhis2/open-geo-service.git@feat/forecast-cubes",
 ]
 
 [[tool.uv.index]]
@@ -49,7 +49,7 @@ url = "https://gisidx.github.io/gwi"
 explicit = true
 
 [tool.uv.sources]
-open-climate-service = { git = "https://github.com/dhis2/open-climate-service.git", branch = "feat/forecast-cubes" }  # OCS PR #339 (forecast cubes); back to main once it merges
+open-geo-service = { git = "https://github.com/dhis2/open-geo-service.git", branch = "feat/forecast-cubes" }  # Open Geo Service PR #339 (forecast cubes); back to main once it merges
 gdal = { index = "geospatial-wheels", marker = "sys_platform == 'win32'" }
 dhis2-client = { git = "https://github.com/dhis2/dhis2-python-client.git" }
-ocs-plugins = { git = "https://github.com/dhis2-chap/ocs-plugins.git", branch = "main" }
+open-geo-service-plugins = { git = "https://github.com/dhis2-chap/open-geo-service-plugins.git", branch = "main" }

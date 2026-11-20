@@ -10,7 +10,7 @@ End-to-end pipeline driven from Python:
 The workflow uses each org unit's GeoJSON ``id`` (its DHIS2 UID) as the ``orgUnit``, so the result imports into DHIS2 without any remapping.
 
 Requires:
-  pip install open-climate-service "dhis2-client @ git+https://github.com/dhis2/dhis2-python-client.git"
+  pip install open-geo-service "dhis2-client @ git+https://github.com/dhis2/dhis2-python-client.git"
   A running Open Climate Service instance with the dataset published.
   A DHIS2 instance whose org units have geometry, plus a target data element.
 
@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from dhis2_client import DHIS2Client
 from dhis2_client.settings import ClientSettings
 
-from open_climate_service import ClimateService
+from open_geo_service import GeoService
 
 # --- Open Climate Service ---------------------------------------------------
 load_dotenv()
@@ -59,7 +59,7 @@ def main() -> None:
     print(f"Fetched {len(org_units['features'])} org units from DHIS2 (level {ORG_UNIT_LEVEL})")
 
     # 2. Run the aggregation workflow on Open Climate Service -> DHIS2 dataValueSet.
-    service = ClimateService(OCS_BASE_URL)
+    service = GeoService(OCS_BASE_URL)
     data_value_set = service.execute(
         {
             "agg": {

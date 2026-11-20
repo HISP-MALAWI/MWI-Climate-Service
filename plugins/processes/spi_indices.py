@@ -1,8 +1,8 @@
 import xarray as xr
-import xclim.indices as xci
+import xclim.compute as xci
 import numpy as np
 import pandas as pd
-from open_climate_service.process import process
+from open_geo_service.process import process
 
 @process(
     summary="calculate SPI-1 index", # type: ignore

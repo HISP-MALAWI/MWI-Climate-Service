@@ -2,18 +2,18 @@
 
 Serves an already-downloaded seasonal forecast (a single NetCDF file, issued
 once, covering a handful of monthly lead times) into Open Climate Service.
-Unlike most OCS dataset plugins this does not poll a remote API: the whole
+Unlike most Open Geo Service dataset plugins this does not poll a remote API: the whole
 file is loaded once, when the plugin is constructed, and served back one
 calendar month at a time.
 
 Used by two dataset templates in mwi_seasonal_forecast.yaml — a Tmean
 forecast and a rainfall forecast — that share this one class and differ only
 in `ingestion.params` (the "multiple templates, one plugin class" pattern
-described in the OCS "Adding custom datasets" guide).
+described in the Open Geo Service "Adding custom datasets" guide).
 
 Reads the source .nc files straight out of the instance's own
 forecast_data/ directory (a sibling of plugins/, next to
-climate-service.yaml) rather than bundling copies under the plugin — see
+geoservice.yaml) rather than bundling copies under the plugin — see
 `nc_path` below.
 """
 
@@ -22,7 +22,7 @@ from pathlib import Path
 import pandas as pd
 import rioxarray  # noqa: F401  # activates the .rio accessor used below
 import xarray as xr
-from open_climate_service.streaming import BaseDatasetPlugin, normalize_period
+from open_geo_service.streaming import BaseDatasetPlugin, normalize_period
 
 
 class LocalNetCDFForecastPlugin(BaseDatasetPlugin):
@@ -32,19 +32,19 @@ class LocalNetCDFForecastPlugin(BaseDatasetPlugin):
         nc_path: path to the .nc file. A relative path (e.g.
             "forecast_data/tmean_seasonal_forecast_2026_2027.nc") is
             resolved against the instance's working directory, the same way
-            `data_dir` in climate-service.yaml is — i.e. it assumes the
+            `data_dir` in geoservice.yaml is — i.e. it assumes the
             service runs from the instance repo root. Use an absolute path
             instead if that doesn't hold for your deployment.
         source_variable: name of the data variable inside the source file
             (e.g. "Tmean", "rainfall_forecast").
-        variable: name to store the variable under in OCS. Must match this
+        variable: name to store the variable under in Open Geo Service. Must match this
             template's top-level `variable:` field.
     """
 
     # Both source files are plain WGS84 lat/lon grids, but neither carries
     # any CRS metadata of its own. normalize_period's bbox clip needs a CRS
     # attached via rioxarray regardless of whether the grid is projected
-    # (see the seNorge/UTM example in the OCS "Adding custom datasets"
+    # (see the seNorge/UTM example in the Open Geo Service "Adding custom datasets"
     # guide) — without this, fetch_period fails with "CRS not found. Please
     # set the CRS with 'rio.write_crs()'."
     crs = 4326
