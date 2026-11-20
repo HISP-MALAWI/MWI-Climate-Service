@@ -1,5 +1,5 @@
 - id: era5_mean_temperature_daily
-  name: Mean Temperature (ERA5)
+  name: Mean Temperature (ERA5-Land)
   short_name: Mean Temp
   variable: tmean
   period_type: daily
@@ -9,7 +9,7 @@
     spatial:
       bbox: [-180, -90, 180, 90]
     temporal:
-      begin: "1940-01-01"
+      begin: "1950-01-01"
       resolution: P1D
   ingestion:
     plugin: rasters.era5_mean_temperature.Era5MeanTemperaturePlugin
@@ -18,9 +18,9 @@
     units: "degC"
     standard_name: air_temperature
     cell_methods: "time: mean"
-  resolution: 0.25° × 0.25°
-  source: ERA5 reanalysis
-  source_url: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
+  resolution: 0.1° × 0.1°
+  source: ERA5-Land via DestinE Earth Data Hub
+  source_url: https://earthdatahub.destine.eu/collections/era5/datasets/era5-land
   display:
     colormap: RdYlBu_r
     range: [10, 35]

@@ -1,14 +1,13 @@
-"""Daily mean 2 m air temperature from the ERA5 reanalysis via CDS."""
+"""Daily mean 2 m air temperature from ERA5-Land on DestinE Earth Data Hub."""
 
 from __future__ import annotations
 
-import calendar
 import logging
-import tempfile
+import os
 from datetime import date, timedelta
-from pathlib import Path
 from typing import Any
 
+import aiohttp
 import numpy as np
 import xarray as xr
 
@@ -16,19 +15,18 @@ from open_climate_service.streaming import BaseDatasetPlugin
 
 logger = logging.getLogger(__name__)
 
-_DATASET = "reanalysis-era5-single-levels"
-_API_VARIABLE = "2m_temperature"
-_FIRST_DATE = date(1940, 1, 1)
+_ZARR_URL = "https://data.earthdatahub.destine.eu/era5/era5-land-v0.zarr"
+_VARIABLE_CANDIDATES = ("2m_temperature", "t2m", "temperature_2m")
+_FIRST_DATE = date(1950, 1, 1)
 _PUBLICATION_LAG_DAYS = 5
-_HOURLY_TIMES = [f"{hour:02d}:00" for hour in range(24)]
 
 
 class Era5MeanTemperaturePlugin(BaseDatasetPlugin):
-    """Ingestion plugin for daily means of ERA5 hourly 2 m temperature.
+    """Ingest daily means of hourly ERA5-Land 2 m temperature.
 
-    ERA5 values are converted from kelvin to degrees Celsius after averaging
-    the 24 hourly values for each UTC day. A calendar month is downloaded per
-    CDS request and kept in memory for subsequent daily fetches.
+    Earth Data Hub serves the hourly source as a Zarr v3 store. A requested
+    month is subset to the configured bbox, averaged to daily values, and
+    cached while the ingestion processes each day's output period.
     """
 
     max_concurrency = 1
@@ -37,8 +35,9 @@ class Era5MeanTemperaturePlugin(BaseDatasetPlugin):
     pyramid: bool = True
 
     def __init__(self) -> None:
+        self._source: xr.Dataset | None = None
         self._cached_month: tuple[int, int] | None = None
-        self._cached_ds: xr.Dataset | None = None
+        self._cached_daily: xr.Dataset | None = None
 
     async def periods(self, start: str, end: str) -> list[str]:
         start_date = max(date.fromisoformat(start[:10]), _FIRST_DATE)
@@ -60,89 +59,132 @@ class Era5MeanTemperaturePlugin(BaseDatasetPlugin):
         requested_date = date.fromisoformat(period_id[:10])
         month = (requested_date.year, requested_date.month)
         if self._cached_month != month:
-            self._cached_ds = self._download_month(*month, bbox)
+            self._cached_daily = self._read_month(*month, bbox)
             self._cached_month = month
 
-        if self._cached_ds is None:
-            raise RuntimeError(f"ERA5 data cache was not populated for {month[0]}-{month[1]:02d}")
+        if self._cached_daily is None:
+            raise RuntimeError(
+                f"ERA5-Land cache was not populated for {month[0]}-{month[1]:02d}"
+            )
 
-        time_coord = "valid_time" if "valid_time" in self._cached_ds.coords else "time"
         target = np.datetime64(requested_date.isoformat())
         try:
-            da = self._cached_ds[_API_VARIABLE].sel({time_coord: target})
+            daily = self._cached_daily["tmean"].sel(time=target)
         except KeyError as exc:
-            raise ValueError(f"ERA5 has no hourly temperature values for {period_id}") from exc
+            raise ValueError(
+                f"Earth Data Hub ERA5-Land has no 2 m temperature values for {period_id}"
+            ) from exc
 
-        rename = {
-            name: target_name
-            for name, target_name in (("latitude", "y"), ("longitude", "x"))
-            if name in da.dims
-        }
-        if rename:
-            da = da.rename(rename)
-        da = (da - 273.15).astype("float32")
-        da.attrs["units"] = "degC"
-        da.attrs["standard_name"] = "air_temperature"
-        da.attrs["cell_methods"] = "time: mean"
-
-        result = da.to_dataset(name="tmean")
-        result = result.expand_dims(t=[np.datetime64(requested_date.isoformat())])
+        result = daily.expand_dims(t=[target]).to_dataset(name="tmean")
+        result["tmean"].attrs.update(
+            {
+                "units": "degC",
+                "standard_name": "air_temperature",
+                "cell_methods": "time: mean",
+                "source": "ERA5-Land hourly 2 m temperature, averaged over UTC day",
+            }
+        )
         return result.load()
 
-    def _download_month(self, year: int, month: int, bbox: list[float]) -> xr.Dataset:
-        import cdsapi
+    def _open_source(self) -> xr.Dataset:
+        if self._source is not None:
+            return self._source
 
-        xmin, ymin, xmax, ymax = map(float, bbox)
-        _, last_day = calendar.monthrange(year, month)
-        cutoff = date.today() - timedelta(days=_PUBLICATION_LAG_DAYS)
-        if (year, month) == (cutoff.year, cutoff.month):
-            last_day = min(last_day, cutoff.day)
-        logger.info("Downloading ERA5 2 m temperature for %d-%02d from CDS", year, month)
+        api_key = os.getenv("EDH_API_KEY") or os.getenv("EDH_PASSWORD")
+        if not api_key:
+            raise ValueError(
+                "DestinE Earth Data Hub API key missing. Set EDH_API_KEY in the "
+                "OCS server environment (or EDH_PASSWORD for compatibility)."
+            )
 
-        request = {
-            "product_type": ["reanalysis"],
-            "variable": [_API_VARIABLE],
-            "year": [f"{year:04d}"],
-            "month": [f"{month:02d}"],
-            "day": [f"{day:02d}" for day in range(1, last_day + 1)],
-            "time": _HOURLY_TIMES,
-            "area": [ymax, xmin, ymin, xmax],
-            "data_format": "netcdf",
-            "download_format": "unarchived",
-        }
+        username = os.getenv("EDH_USERNAME", "edh")
+        auth = aiohttp.BasicAuth(username, api_key)
+        logger.info("Opening ERA5-Land Zarr source from DestinE Earth Data Hub")
+        self._source = xr.open_zarr(
+            _ZARR_URL,
+            storage_options={
+                "client_kwargs": {
+                    "auth": auth,
+                    "trust_env": True,
+                }
+            },
+            zarr_format=3,
+        )
+        return self._source
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            nc_path = Path(tmpdir) / "era5.nc"
-            cdsapi.Client().retrieve(_DATASET, request, str(nc_path))
-            with xr.open_dataset(nc_path) as downloaded:
-                ds = downloaded.load()
-
-        if "expver" in ds.dims:
-            merged = ds.isel(expver=0, drop=True)
-            for index in range(1, ds.sizes["expver"]):
-                merged = merged.combine_first(ds.isel(expver=index, drop=True))
-            ds = merged
-        elif "expver" in ds.coords:
-            ds = ds.drop_vars("expver")
-
-        # ERA5's hourly surface field is in kelvin. Compute the daily UTC mean
-        # before converting units, preserving the average for all 24 hours.
-        time_coord = "valid_time" if "valid_time" in ds.coords else "time"
-        variable = (
-            _API_VARIABLE
-            if _API_VARIABLE in ds.data_vars
-            else "t2m"
-            if "t2m" in ds.data_vars
-            else None
+    def _read_month(self, year: int, month: int, bbox: list[float]) -> xr.Dataset:
+        source = self._open_source()
+        variable = next(
+            (name for name in _VARIABLE_CANDIDATES if name in source.data_vars),
+            None,
         )
         if variable is None:
             raise ValueError(
-                "CDS ERA5 response does not contain the expected 2 m temperature "
-                f"variable (found: {list(ds.data_vars)})"
+                "Earth Data Hub ERA5-Land store does not contain a recognized "
+                f"2 m temperature variable; found {list(source.data_vars)}."
             )
-        if variable != _API_VARIABLE:
-            ds = ds.rename({variable: _API_VARIABLE})
-        ds = ds.resample({time_coord: "1D"}).mean()
-        if time_coord != "time":
-            ds = ds.rename({time_coord: "time"})
-        return ds
+
+        time_name = next(
+            (name for name in ("valid_time", "time") if name in source[variable].coords),
+            None,
+        )
+        latitude_name = next(
+            (name for name in ("latitude", "lat", "y") if name in source[variable].coords),
+            None,
+        )
+        longitude_name = next(
+            (name for name in ("longitude", "lon", "x") if name in source[variable].coords),
+            None,
+        )
+        if time_name is None or latitude_name is None or longitude_name is None:
+            raise ValueError(
+                "Earth Data Hub ERA5-Land temperature is missing time/latitude/"
+                f"longitude coordinates: {source[variable].dims}."
+            )
+
+        xmin, ymin, xmax, ymax = map(float, bbox)
+        first_day = date(year, month, 1)
+        next_month = date(year + int(month == 12), month % 12 + 1, 1)
+        time_values = source[time_name]
+        selected = source[variable].where(
+            (time_values >= np.datetime64(first_day.isoformat()))
+            & (time_values < np.datetime64(next_month.isoformat())),
+            drop=True,
+        )
+        selected = selected.where(
+            (selected[longitude_name] >= xmin)
+            & (selected[longitude_name] <= xmax)
+            & (selected[latitude_name] >= ymin)
+            & (selected[latitude_name] <= ymax),
+            drop=True,
+        )
+        if selected.sizes.get(time_name, 0) == 0:
+            raise ValueError(
+                f"Earth Data Hub ERA5-Land has no hourly temperature data for "
+                f"{year}-{month:02d}."
+            )
+        if (
+            selected.sizes.get(latitude_name, 0) == 0
+            or selected.sizes.get(longitude_name, 0) == 0
+        ):
+            raise ValueError(f"ERA5-Land has no source cells inside bbox {bbox}.")
+
+        daily = selected.resample({time_name: "1D"}).mean(skipna=True)
+        rename = {
+            source_name: target_name
+            for source_name, target_name in (
+                (time_name, "time"),
+                (latitude_name, "y"),
+                (longitude_name, "x"),
+            )
+            if source_name != target_name
+        }
+        if rename:
+            daily = daily.rename(rename)
+
+        daily = (daily - 273.15).astype("float32")
+        daily.name = "tmean"
+        daily.attrs["units"] = "degC"
+        daily.attrs["standard_name"] = "air_temperature"
+        daily.attrs["cell_methods"] = "time: mean"
+        return daily.to_dataset().load()
